@@ -7,6 +7,7 @@
 \usepackage{float}
 
 \renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
 \renewcommand{\refname}{Referencias}
 
 \title{Memoria visual de un robot usando redes neuronales}
@@ -92,7 +93,14 @@ Para el uso de Deep Learning han surgido numerosos entornos, estos son algunos d
 En [6,3] se realiza un estudio comparativo que incluye los entornos citados donde se pueden destacar las buenas prestaciones de los mismos respecto a otros.\\
 
 \subsection{Datasets en Visión Artificial}
-Los conjuntos de datos empleados a la hora de implementar un determinado sistema o probarlo son clave pues influyen en el rendimiento que pueda llegar a obtener el mismo. Además permiten hacer una comparativa de la solución encontrada respecto a otras que conforman el Estado del Arte en la tarea que se realiza. Por ello es necesario elegir correctamente el dataset o los datasets empleados en un problema de visión artificial. A continuación se comentan algunos de los datasets más importantes en visión arificial: 
+Los conjuntos de datos empleados a la hora de implementar un determinado sistema o probarlo son clave pues influyen en el rendimiento que pueda llegar a obtener el mismo. Además permiten hacer una comparativa de la solución encontrada respecto a otras que conforman el Estado del Arte en la tarea que se realiza. Por ello es necesario elegir correctamente el dataset o los datasets empleados en un problema de visión artificial. A continuación se comentan algunos de los datasets más relacionados con las tareas que se pretenden realizar en este trabajo:
+\begin{itemize}
+\item \textbf{COCO (Common Objects in Context)}\footnote {\href{http://cocodataset.org/#home}{COCO Dataset}}: es un dataset de larga escala para detección y segmentación de objetos principalmente. Contiene 80 categorías de objetos y 330000 imágenes de las cuales más de 200000 están etiquetadas. Es un dataset ampliamente utilizado entre la comunidad y en congresos como el ICCV (International Conference on Computer Vision).
+\item \textbf{Cityscapes}\footnote {\href{https://www.cityscapes-dataset.com/}{Cityscapes Dataset}}: este dataset se centra en la segmentación semántica en escenas urbanas. Contiene 30 clases de objetos, 5000 imágenes etiquetadas con etiqueta \say{fina} (\textit{fine}) y 20000 etiquetadas con etiqueta \say{gruesa} (\textit{coarse}) en 50 ciudades diferentes.
+\item \textbf{PASCAL VOC}\footnote {\href{http://host.robots.ox.ac.uk/pascal/VOC/}{PASCAL VOC}}: este conjunto de datos ha proporcionado soporte a gran cantidad de \textit{challenges} de reconocimiento de objetos como el ILSVRC (realizado en conjunto con el PASCAL Visual Objects Classes Challenge) y es muy conocido en visión artificial. El último lanzamiento del año 2012 consta de 20 clases, 11530 imágenes de train/val con 27450 objetos etiquetados y 6929 segmentaciones.
+\end{itemize}
+Existen numerosos datasets más como INRIA, los datasets del MIT o Caltech, por ejemplo, que contribuyen a la mejora continua en este área.
+
 \subsection{Objetivos}
 Como se ha comentado en la sección de Introducción el objetivo principal de este trabajo es la implementación de una memoria visual en un robot utlizando para ello redes neuronales. El robot deberá ser capaz de "comprender" el entorno que le rodea diferenciando clases como humanos, puertas, mesas o ventanas y con esto poder tomar buenas decisiones. Para ello se va a probar el uso de una técnica novedosa dentro del campo de la segmentación semántica conocida como \textit{Mask R-CNN} que ha demostrado resultados prometedores [6,4].
 
@@ -142,12 +150,38 @@ Para resolverlo se introduce la RPN (\textit{Region Proposal Network}) que sumad
 \end{center}
 \end{figure}
 \item \textbf{Overfeat} [22]: ganador del ILSVRC del 2013 en localización y detección de objetos, este trabajo mostró que entrenar una red convolucional para simultáneamente clasificar, localizar y detectar objetos en imágenes puede potenciar el acierto tanto en clasificación como en detección y localización. Posteriormente, ha sido reemplazado por SSD y YOLO para tareas que requieran una mejor detección en tiempo real.
-\item \textbf{SSD} [23]: existen modelos más rápidos que Faster R-CNN como R-FCN que trata de mejorar la velocidad del sistema maximizando el cómputo compartido [24] o SSD. Esta última proporciona grandes ganancias en velocidad respecto a Faster R-CNN realizando las fases de generación de regiones de interés y posterior clasificación de forma conjunta (\textit{Single Shot MultiBox Detector}). Como resultado obtiene una gran cantidad de bounding box de las cuales la mayoría no son útiles. Aplicando en ellas las técnicas \textit{non-maximum suppression} y \textit{hard-negative mining} se consiguen las detecciones finales.
+\item \textbf{SSD} [23]: existen modelos más rápidos que Faster R-CNN como R-FCN, que trata de mejorar la velocidad del sistema maximizando el cómputo compartido [24], o SSD. Esta última proporciona grandes ganancias en velocidad respecto a Faster R-CNN realizando las fases de generación de regiones de interés y posterior clasificación de forma conjunta (\textit{Single Shot MultiBox Detector}). Como resultado obtiene una gran cantidad de bounding box de las cuales la mayoría no son útiles. Aplicando en ellas las técnicas \textit{non-maximum suppression} y \textit{hard-negative mining} se consiguen las detecciones finales.
 \item \textbf{YOLO} [25]: este sistema usa un enfoque diferente a los anteriores ya que aplica una sóla red neuronal a la imagen completa. Esta red divide la imagen en regiones y predice los bounding box y probabilidades de cada región. Posteriormente estas son ponderadas con las probabilidades para obtener las detecciones definitivas. Esto lo hace, según indican los autores, cien veces más rápido que Fast R-CNN, por ejemplo, manteniendo un acierto similar. En la última versión, YOLOv2, se introducen algunas mejoras como FCN.
 \end{itemize}
+\begin{table}
+\begin{center}
+\includegraphics[scale=0.35]{yolo_results_pascal12.png}
+\caption{Comparativa de acierto en detección en test de PASCAL VOC 2012}
+\end{center}
+\end{table}
+En esta tabla obtenida de [25] se puede observar como YOLO se encuentra casi a la par en acierto a métodos como SSD o Faster R-CNN, mejores en acierto. En cambio, tiene un mejor equilibrio rapidez-acierto ya que consigue trabajar en algunos casos a 91 FPS (\textit{frames per second}) cuando Faster R-CNN apenas llega a 10 FPS (ver Tabla 3 en [25]).
 
-\subsection{Segmentación usando redes neuronales}
-%-------------------------------------------------------------------------
+\subsection{Segmentación usando redes neuronales: Mask R-CNN}
+La comunidad en visión artificial ha mejorado los resultados obtenidos en detección de objetos y segmentación semántica en un corto período de tiempo gracias, en gran parte, a poderosos sistemas de base como Faster R-CNN. En este proyecto se tratará de realizar segmentación de instancias, lo cual requiere de la correcta detección de todos los objetos en la imagen junto con la segmentación precisa de cada instancia. Así, cada pixel pertenece a alguna de las diferentes categorías sin diferenciar que se encuentre o no en un determinado objeto.\\
+Llevados por la efectividad de la familia de R-CNN muchos de los métodos propuestos para segmentación de instancias están basados en propuestas de segmento, donde la segmentación precede al reconocimiento del tipo de objeto [26]. Esto ha demostrado ser más lento e impreciso que si se realizase de forma paralela y separada la predicción de las máscaras del objeto y las etiquetas de las clases. Li \etal{} proponen un sistema conocido como FCIS (Fully Convolutional Instance Segmentation) [27] que trata de predecir la salida de un conjunto de canales sensibles a la posición de forma completamente convolucional. Estos canales realizan las tareas de obtención de las clases, bounding box y máscaras de forma simultánea lo que los hace más rápidos, pero muestran errores en instancias que se solapan creando bordes espurios.\\
+Recientemente surge Mask R-CNN [6,4] para resolver muchos de estos problemas y situarse como técnica estado del arte en segmentación de instancias como se puede ver en la Figura \ref{fig:fcis_mask}. Por ello esta sección se va a centrar en esta técnica y sus resultados.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.30]{fcis_vs_maskrcnn.png}
+\caption{Resultados obtenidos por FCIS y Mask R-CNN en imágenes de test de COCO Dataset}
+\label{fig:fcis_mask}
+\end{center}
+\end{figure}
+Conceptualmente, Mask R-CNN añade una tercera etapa a Faster R-CNN en la que obtiene la máscara del objeto. La primera etapa de RPN coincide con la de Faster R-CNN mientras que en la segunda calcula, en paralelo con la predicción de la clase y la bounding box, una máscara binaria para cada región de interés (RoI). La generación de máscaras para cada clase se hace sin que las clases compitan entre ellas lo que permite separar la máscara y la predicción de la clase del objeto. Según los autores, esto demuestra ser clave para unos buenos resultados en la segmentación final.\\ 
+Otro de los factores clave en el buen funcionamiento de este método es el alineamiento correcto entre las RoI y las características extraídas. Esto se suele hacer mediante \textit{RoIPool} en Fast R-CNN pero introduce desalineamientos si lo que se desea es segmentar en lugar de clasificar, por lo que en Mask R-CNN se crea \textit{RoIAlign} para corregir este problema. Para demostrar la generalidad del método propuesto los autores introducen la rama de predicción de la máscara sobre varias arquitecturas de redes neuronales existentes como Faster R-CNN con ResNet como extractor de características, por ejemplo, y logran superar a los ganadores del COCO Challenge de segmentación de 2015 y 2016, MNC [28] y FCIS [27]. En estos experimentos se utilizan las métricas standard de COCO.
+\begin{table}[h!]
+\begin{center}
+\includegraphics[scale=0.40]{mask_vs_mnc_fcis.png}
+\caption{Resultados obtenidos por Mask R-CNN vs el estado del arte en segmentación hasta el momento en imágenes de test de COCO Dataset}
+\end{center}
+\end{table}
+Como se aprecia, todas las implementaciones del modelo Mask R-CNN superan los modelos base previos del estado del arte en segmentación de instancias.
+%------------------------------------------------------------------------
 \bibliography{}\\
 $\left[1\right]$  "Introduction to the Special Issue on Robotics and Computer Vision", J. Braz. Comp. Soc. vol. 4 no. 3 Campinas Apr. 1998\\
 $\left[2\right]$  Luis Pérez, Íñigo Rodríguez, Nuria Rodríguez, Rubén Usamentiaga, and Daniel F. Gar-
@@ -238,4 +272,9 @@ Wei Liu, Dragomir Anguelov, Dumitru Erhan, Christian Szegedy, Scott Reed, Cheng-
 $\left[24\right]$  "R-FCN: Object Detection via Region-based Fully Convolutional Networks", Jifeng Dai, Yi Li, Kaiming He, Jian Sun. 2016.\\
 $\left[25\right]$  "YOLO9000: Better, Faster, Stronger"
 Joseph Redmon, Ali Farhadi, University of Washington, Allen Institute for AI. 2016.\\
+$\left[26\right]$  Learning to Segment Object Candidates, Pedro O. Pinheiro, Ronan Collobert, Piotr Dollar, Facebook AI Research. 2015.\\
+$\left[27\right]$  Y. Li, H. Qi, J. Dai, X. Ji, and Y. Wei. Fully convolutional
+instance-aware semantic segmentation. In CVPR, 2017.\\
+$\left[28\right]$  J. Dai, K. He, and J. Sun. Instance-aware semantic segmen-
+tation via multi-task network cascades. In CVPR, 2016.\\
 \end{document}
