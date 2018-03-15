@@ -95,7 +95,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
 
     # Generate random colors
     colors = random_colors(N)
-
+    color_list = []
     masked_image = image.astype(np.uint8).copy()
     for i in range(N):
         color = colors[i]
@@ -124,15 +124,16 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
         padded_mask[1:-1, 1:-1] = mask
         contours = find_contours(padded_mask, 0.5)
+        edge_color = tuple([255 * x for x in color])
         for i, verts in enumerate(contours):
             # Subtract the padding and flip (y, x) to (x, y)
             verts = np.fliplr(verts) - 1
-            contours[i] = verts
-        contours = np.array(contours).reshape((-1, 1, 2)).astype(np.int32)
-        edgecolor = tuple([255 * x for x in color])
-        cv2.drawContours(masked_image, contours, -1, edgecolor)
+            verts = np.array(verts).reshape(-1, 1, 2).astype(np.int32)
+            cv2.drawContours(masked_image, verts, -1, edge_color)
+        color_list.append(edge_color)
 
-    return masked_image.astype(np.uint8)
+
+    return masked_image.astype(np.uint8), color_list
     
 
 def draw_rois(image, rois, refined_rois, mask, class_ids, class_names, limit=10):

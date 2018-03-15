@@ -12,35 +12,24 @@
 # https://github.com/JdeRobot/dl-objectdetector
 #
 
-import sys
 import traceback
 import threading
 
 import numpy as np
-import comm
-import config
+import cv2
 
 
 class Camera:
 
-
-    def __init__(self):
+    def __init__(self, cam):
         ''' Camera class gets images from live video
         in order to segment the objects in the image.
         '''
 
-        # Creation of the camera through the comm-ICE proxy.
-        try:
-            cfg = config.load(sys.argv[1])
-        except IndexError:
-            raise SystemExit('Missing YML file. Usage: python2 objectsegmentator.py objectsegmentator.yml')
-
-        jdrc = comm.init(cfg, 'ObjectSegmentator')
-
+        self.cam = cam
         self.lock = threading.Lock()
 
         try:
-            self.cam = jdrc.getCameraClient('ObjectSegmentator.Camera')
             if self.cam.hasproxy():
                 self.im = self.cam.getImage()
                 self.im_height = self.im.height
@@ -60,13 +49,18 @@ class Camera:
         '''
         if self.cam:
             self.lock.acquire()
-            #im = np.zeros((self.im_height, self.im_width, 3), np.uint8)
             im = np.frombuffer(self.im.data, dtype=np.uint8)
-            im.shape = self.im_height, self.im_width, 3
+            im = self.transformImage(im)
+            im = np.reshape(im, (540, 404, 3))
 
             self.lock.release()
 
             return im
+
+    def transformImage(self, im):
+        im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
+        im_resized = cv2.resize(im_resized, (404, 540))
+        return im_resized
 
     def update(self):
         ''' Updates the camera every time the thread changes. '''

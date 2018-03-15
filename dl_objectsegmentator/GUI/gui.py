@@ -8,12 +8,10 @@
 #     master/gui/gui.py
 #
 
-import numpy as np
+import time
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
-from Net.network import Segmentation_Network
-from Net.threadnetwork import ThreadNetwork
 
 
 class GUI(QtWidgets.QWidget):
@@ -43,36 +41,39 @@ class GUI(QtWidgets.QWidget):
         self.im_segmented_label.move(610, 50)
         self.im_segmented_label.show()
 
+        # Button for processing continuous frames
+        self.button_continuous = QtWidgets.QPushButton('Run continuous', self)
+        self.button_continuous.move(520, 440)
+        self.button_continuous.clicked.connect(self.toggleNetwork)
+        self.button_continuous.setStyleSheet('QPushButton {color: green;}')
+
         # Button for processing a single frame
         self.button_now = QtWidgets.QPushButton('Run now', self)
         self.button_now.move(540, 400)
         self.button_now.clicked.connect(self.updateOnce)
 
-        # Button for processing continuous frames
-        self.button_continuous = QtWidgets.QPushButton('Run continuous', self)
-        self.button_continuous.setCheckable(True)
-        self.button_continuous.move(520, 440)
-        self.button_continuous.setAutoRepeat(True)
-        self.button_continuous.setAutoRepeatDelay(0)
-        self.button_continuous.setAutoRepeatInterval(30000)
-        self.button_continuous.clicked.connect(self.updateContinuous)
-
-        # Network initialization
-        self.network = Segmentation_Network()
-        self.t_network = ThreadNetwork(self.network)
-        self.t_network.start()
+        self.detection = None
+        self.last_segmented = None
 
     def setCamera(self, cam):
         ''' Declares the Camera object '''
         self.cam = cam
 
+    def setNetwork(self, network, t_network):
+        ''' Declares the Network object and its corresponding control thread. '''
+        self.network = network
+        self.t_network = t_network
+
+    def setTracker(self, tracker):
+        self.tracker = tracker
+
     def update(self):
         ''' Updates the GUI for every time the thread change '''
         # We get the original image and display it.
-        im_prev = self.cam.getImage()
-        self.network.input_image = im_prev
 
-        im_segmented = self.network.output_image
+        im_prev = self.cam.getImage()
+        self.network.setInputImage(im_prev)
+        self.tracker.setInputImage(im_prev)
 
         im = QtGui.QImage(im_prev.data, im_prev.shape[1], im_prev.shape[0],
                           QtGui.QImage.Format_RGB888)
@@ -80,32 +81,52 @@ class GUI(QtWidgets.QWidget):
 
         self.im_label.setPixmap(QtGui.QPixmap.fromImage(im_scaled))
 
-        #print(self.button_continuous.isDown())
-        #self.button_continuous.clicked.connect(self.printeer)
-
         # Display segmentation results
-        if im_segmented is not None:
-            im_segmented = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
-                            QtGui.QImage.Format_RGB888)
-            im_segmented_scaled = im_segmented.scaled(self.im_segmented_label.size())
-            self.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-        else:
+        try:
+            im_segmented = self.network.getOutputImage()
+            if ((im_segmented == self.last_segmented).all()) and im_segmented is not None and self.network.activated:
+
+                detection = self.network.getOutputDetection()
+                label = self.network.getOutputLabel()
+                color_list = self.network.getColorList()
+                self.tracker.setInputDetection(detection)
+                self.tracker.setInputLabel(label)
+                self.tracker.setColorList(color_list)
+                im_detection = self.tracker.getOutputImage()
+                im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1], im_detection.shape[0],
+                                            QtGui.QImage.Format_RGB888)
+
+                im_detection_scaled = im_detection.scaled(self.im_segmented_label.size())
+
+                self.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+            else:
+
+                self.last_segmented = im_segmented
+                im_segmented = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
+                                QtGui.QImage.Format_RGB888)
+
+                im_segmented_scaled = im_segmented.scaled(self.im_segmented_label.size())
+
+                self.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+
+        except AttributeError:
+            '''
             im_segmented = np.zeros((480, 320), dtype=np.int32)
             im_segmented = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
                                         QtGui.QImage.Format_RGB888)
             im_segmented_scaled = im_segmented.scaled(self.im_segmented_label.size())
             self.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+            '''
+            pass
 
+    def toggleNetwork(self):
+        self.network.toggleNetwork()
+        self.tracker.toggleTracker()
+
+        if self.network.activated:
+            self.button_continuous.setStyleSheet('QPushButton {color: green;}')
+        else:
+            self.button_continuous.setStyleSheet('QPushButton {color: red;}')
 
     def updateOnce(self):
-        self.t_network.activated = True
         self.t_network.runOnce()
-
-    def updateContinuous(self):
-        self.t_network.activated = True
-        self.button_continuous.setChecked(True)
-        self.button_continuous.setDown(True)
-        self.t_network.runOnce()
-
-    #def printeer(self):
-        #print('clicked')
