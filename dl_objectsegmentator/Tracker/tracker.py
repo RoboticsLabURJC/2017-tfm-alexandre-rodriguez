@@ -10,53 +10,56 @@ class Tracker:
 
         self.lock = threading.Lock()
 
-        self.activated = True
-
+        self.activated = False
         self.input_detection = None
-        self.input_image = None
         self.input_label = None
         self.output_image = None
-        self.last_detection = None
         self.color_list = None
+        self.buffer_in = []
+        self.buffer_out = []
+        self.image_counter = 0
+        self.new_detection = False
 
     def track(self):
 
         detection = self.input_detection
-        image = self.input_image
+        #print(self.new_detection)
+        #print(len(self.buffer_in))
+        if detection is not None and self.new_detection:  # new detection
 
-        if detection is not None and ((detection == self.last_detection).all()): # detecciones coinciden, solo actualiza bbox
-            _, boxes = self.tracker.update(image)
-            for i, newbox in enumerate(boxes):
-                p1 = (int(newbox[0]), int(newbox[1]))
-                p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-                if len(self.color_list) == len(boxes):
-                    cv2.rectangle(image, p1, p2, self.color_list[i], thickness=2)
-                    cv2.putText(image, self.input_label[i], (p1[0], p1[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
-                                (0, 0, 0), thickness=2, lineType=2)
-                else:
-                    cv2.rectangle(image, p1, p2, (255, 0, 0), thickness=2)
-
-        elif detection is not None and ((detection != self.last_detection).all()): # detecciones nuevas, reinicia multitracker
             self.tracker = cv2.MultiTracker_create()
-            for i in range(len(detection)):
-                self.tracker.add(cv2.TrackerTLD_create(), image, (
-                detection[i][1], detection[i][0], detection[i][3] - detection[i][1], detection[i][2] - detection[i][0]))
-            _, boxes = self.tracker.update(image)
-            for i, newbox in enumerate(boxes):
-                p1 = (int(newbox[0]), int(newbox[1]))
-                p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-                cv2.rectangle(image, p1, p2, self.color_list[i], thickness=2)
-                cv2.putText(image, self.input_label[i], (p1[0], p1[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0),
-                            thickness=2, lineType=2)
-            self.last_detection = detection
 
-        self.output_image = image
+            for idx, image in enumerate(self.buffer_in):
+                if self.activated:  # avoid to continue the loop if not activated
+                    for i in range(len(detection)):
+                        if idx == 0:  # create multitracker only in the first frame, same detections
+                            self.tracker.add(cv2.TrackerTLD_create(), image, (
+                                detection[i][1], detection[i][0], detection[i][3] - detection[i][1],
+                                detection[i][2] - detection[i][0]))
+                    _, boxes = self.tracker.update(image)
+                    for i, newbox in enumerate(boxes):
+                        p1 = (int(newbox[0]), int(newbox[1]))
+                        p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
+                        if len(self.color_list) == len(boxes):
+                            cv2.rectangle(image, p1, p2, self.color_list[i], thickness=2)
+                            cv2.putText(image, self.input_label[i], (p1[0], p1[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                                        (0, 0, 0),
+                                        thickness=2, lineType=2)
+                    self.buffer_out.append(image)
+                else:
+                    self.image_counter = 0  # reset when toggling modes (activated=False)
 
-    def setInputImage(self, im):
-        self.input_image = im
+            self.new_detection = False
+            print('Tracking done!')
 
-    def setInputDetection(self, bbox):
+
+    def setBuffer(self, buf):
+        self.buffer_in = buf
+        print('New buffer: ' +str(len(buf)))
+
+    def setInputDetection(self, bbox, state):
         self.input_detection = bbox
+        self.new_detection = state
 
     def setInputLabel(self, label):
         self.input_label = label
@@ -65,7 +68,18 @@ class Tracker:
         self.color_list = color_list
 
     def getOutputImage(self):
-        return self.output_image
+        if self.buffer_out:  # check if list is not empty
+            self.image_counter += 1
+            return self.buffer_out.pop(0)  # returns last detection and deletes it
+        else:
+            return None
+
+    def checkProgress(self):
+        if self.image_counter == len(self.buffer_in):
+            self.toggleTracker()
+            self.buffer_out = []
+            self.image_counter = 0
+            print('Tracker OFF')
 
     def toggleTracker(self):
         ''' Toggles the tracker on/off '''

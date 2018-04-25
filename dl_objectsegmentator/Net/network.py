@@ -4,8 +4,9 @@ import threading
 import tensorflow as tf
 import numpy as np
 from Net import model as modellib
-from Net import coco as coco
-from Net import visualize as visualize
+from Net import coco
+from Net import visualize
+from Net import utils
 
 
 class InferenceConfig(coco.CocoConfig):
@@ -30,6 +31,9 @@ class Segmentation_Network:
 
         # Local path to trained weights file
         COCO_MODEL_PATH = os.path.join(ROOT_DIR, "Net/mask_rcnn_coco.h5")
+        # Download COCO trained weights from Releases if needed
+        if not os.path.exists(COCO_MODEL_PATH):
+            utils.download_trained_weights(COCO_MODEL_PATH)
 
         # Create model object in inference mode.
         config = InferenceConfig()
@@ -57,6 +61,7 @@ class Segmentation_Network:
 
             with self.graph.as_default():
                 results = self.model.detect([image], verbose=1)
+                self.activated = False  # apaga
 
             # COCO Class names
             # Index of the class in the list is its ID. For example, to get ID of
@@ -86,13 +91,14 @@ class Segmentation_Network:
             self.detection = detection
             self.label = classes
             self.colors = color_list
+            zeros = False
             print('Image segmented!')
 
         else:
-            segmented_image = None
+            segmented_image = np.array(np.zeros((480, 320), dtype=np.int32))
+            zeros = True
 
-        self.output_image = segmented_image
-
+        self.output_image = [segmented_image, zeros]
 
     def setInputImage(self, im):
         ''' Overrides the input image of the network. '''

@@ -11,7 +11,7 @@ import time
 import threading
 from datetime import datetime
 
-t_cycle = 150  # ms
+t_cycle = 200  # ms
 
 
 class ThreadTracker(threading.Thread):

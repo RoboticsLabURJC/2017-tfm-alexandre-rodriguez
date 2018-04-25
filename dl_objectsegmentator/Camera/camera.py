@@ -4,8 +4,7 @@
 # @author: alexandre2r
 #
 # Class which abstracts a Camera from a proxy (created by ICE/ROS),
-# and provides the methods to keep it constantly updated. It delivers it to the neural network,
-# which returns the segmented objects.
+# and provides the methods to keep it constantly updated.
 #
 #
 # Based on @naxvm code:
@@ -22,39 +21,30 @@ import cv2
 class Camera:
 
     def __init__(self, cam):
-        ''' Camera class gets images from live video
-        in order to segment the objects in the image.
-        '''
+        ''' Camera class gets images from live video. '''
 
         self.cam = cam
+        self.count = 0
         self.lock = threading.Lock()
 
-        try:
-            if self.cam.hasproxy():
-                self.im = self.cam.getImage()
-                self.im_height = self.im.height
-                self.im_width = self.im.width
-                print('Image size: {0}x{1} px'.format(
-                        self.im_width, self.im_height))
-            else:
-                print("Interface camera not connected")
+        if self.cam.hasproxy():
+            self.im = self.cam.getImage()
+            self.im_height = self.im.height
+            self.im_width = self.im.width
 
-        except:
-            traceback.print_exc()
-            exit()
+            print('Image size: {0}x{1} px'.format(
+                self.im_width, self.im_height))
+        else:
+            raise SystemExit("Interface camera not connected")
 
     def getImage(self):
-        ''' Gets the image from the webcam and returns the original
-        image that we're going to use to make the segmentation.
-        '''
+        ''' Gets the image from the webcam and returns the original image. '''
         if self.cam:
-            self.lock.acquire()
             im = np.frombuffer(self.im.data, dtype=np.uint8)
             im = self.transformImage(im)
             im = np.reshape(im, (540, 404, 3))
-
-            self.lock.release()
-
+            self.count += 1
+            cv2.putText(im, str(self.count), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)  # numerate frames
             return im
 
     def transformImage(self, im):
