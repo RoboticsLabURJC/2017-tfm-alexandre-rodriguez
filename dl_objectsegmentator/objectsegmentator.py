@@ -42,12 +42,18 @@ if __name__ == '__main__':
     try:
         cfg = config.load(sys.argv[1])
     except IndexError:
-        raise SystemExit('Missing YML file. Usage: python2 objectsegmentator.py objectsegmentator.yml')
+        raise SystemExit('Missing YML file. Usage: python2 objectsegmentator.py objectsegmentator.yml on')
+
+    try:
+        gui_cfg = sys.argv[2]
+    except IndexError:
+        raise SystemExit('Missing GUI configuration. Usage: python2 objectsegmentator.py objectsegmentator.yml on')
+
 
     jdrc = comm.init(cfg, 'ObjectSegmentator')
     proxy = jdrc.getCameraClient('ObjectSegmentator.Camera')
 
-    cam = Camera(proxy)
+    cam = Camera(proxy, gui_cfg)
     # Threading camera
     t_cam = ThreadCamera(cam)
     t_cam.start()
@@ -62,15 +68,20 @@ if __name__ == '__main__':
     t_tracker = ThreadTracker(tracker)
     t_tracker.start()
 
-    app = QtWidgets.QApplication(sys.argv)
-    window = GUI()
-    window.setCamera(cam)
-    window.setNetwork(network, t_network)
-    window.setTracker(tracker)
-    window.show()
+    if gui_cfg == 'on':
+        app = QtWidgets.QApplication(sys.argv)
+        window = GUI()
+        window.setCamera(cam)
+        window.setNetwork(network, t_network)
+        window.setTracker(tracker)
+        window.show()
 
-    # Threading GUI
-    t_gui = ThreadGUI(window)
-    t_gui.start()
+        # Threading GUI
+        t_gui = ThreadGUI(window)
+        t_gui.start()
 
-    sys.exit(app.exec_())
+        sys.exit(app.exec_())
+
+    else:  # gui off
+        cam.setNetwork(network, t_network)
+        cam.setTracker(tracker)

@@ -12,7 +12,7 @@ import time
 import threading
 from datetime import datetime
 
-t_cycle = 200  # ms 5fps
+t_cycle = 200  # ms
 
 
 class ThreadGUI(threading.Thread):
