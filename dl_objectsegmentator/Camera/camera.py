@@ -28,6 +28,7 @@ class Camera:
         self.gui_cfg = gui_cfg
         self.lock = threading.Lock()
         self.im = None
+        self.buffer_cam = []
 
         if self.cam.hasproxy():
             original_image = self.cam.getImage()
@@ -43,7 +44,7 @@ class Camera:
             print('GUI not set')
             self.detection = None
             self.count2 = 0
-            self.buffer = []
+            #self.buffer = []
 
     def getImage(self):
         ''' Gets the image from the webcam and returns the original image. '''
@@ -62,6 +63,9 @@ class Camera:
         im_resized = cv2.resize(im_resized, (404, 540))
         return im_resized
 
+    def setGUI(self, gui):
+        self.gui = gui
+
     def setNetwork(self, network, t_network):
         ''' Declares the Network object and its corresponding control thread. '''
         self.network = network
@@ -79,16 +83,15 @@ class Camera:
         ''' Updates the camera every time the thread changes. '''
         if self.cam:
             self.lock.acquire()
-
             self.im = self.getImage()
-            #self.im_height = self.im.shape[0]
-            #self.im_width = self.im.shape[1]
-
             self.lock.release()
 
-        if self.gui_cfg == 'off':
+        if self.gui_cfg == 'on':
+            self.buffer_cam.append(self.im)
 
-            im = self.getImage()
+        else:  # gui off
+
+            im = self.getImage() # use self.im directly ?
 
             try:
 
@@ -99,17 +102,17 @@ class Camera:
                 im_segmented = self.network.getOutputImage()[0]
                 zeros = self.network.getOutputImage()[1]
 
-                if zeros:  # primeros frames
+                if zeros:  # first frames
 
-                    self.buffer.append(im)
+                    self.buffer_cam.append(im)
 
                 else:
 
-                    self.buffer.append(im)
+                    self.buffer_cam.append(im)
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
 
-                        self.network.setInputImage(self.buffer[len(self.buffer) - 1])  # segment last frame in buffer
+                        self.network.setInputImage(self.buffer_cam[len(self.buffer_cam) - 1])  # segment last frame in buffer
                         self.network.toggleNetwork()  # network on
                         # segmentada
                         cv2.imwrite(str(self.count) + '.jpg', im_segmented)  # BGR
@@ -121,8 +124,8 @@ class Camera:
                         self.tracker.setInputDetection(detection, True)
                         self.tracker.setInputLabel(label)
                         self.tracker.setColorList(color_list)
-                        self.tracker.setBuffer(self.buffer)
-                        self.buffer = []  # new buffer
+                        self.tracker.setBuffer(self.buffer_cam)
+                        self.buffer_cam = []  # new buffer
                         self.tracker.activated = True  # tracker on
 
                     elif self.tracker.activated:  # tracking output

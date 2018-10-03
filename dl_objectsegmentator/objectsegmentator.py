@@ -71,6 +71,7 @@ if __name__ == '__main__':
     if gui_cfg == 'on':
         app = QtWidgets.QApplication(sys.argv)
         window = GUI()
+        cam.setGUI(window)
         window.setCamera(cam)
         window.setNetwork(network, t_network)
         window.setTracker(tracker)
