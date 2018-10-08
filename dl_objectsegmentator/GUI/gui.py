@@ -96,11 +96,10 @@ class GUI(QtWidgets.QWidget):
 
         self.mode = 'continuous'
         self.detection = None
-        #self.last_segmented = None
+        self.last_segmented = None
         self.count = 0
         self.buffer = []
         self.network_not_finished = True
-        #self.last_buf = []
 
     def setCamera(self, cam):
         ''' Declares the Camera object '''
@@ -117,12 +116,8 @@ class GUI(QtWidgets.QWidget):
     def update(self):
         ''' Updates the GUI for every time the thread change '''
 
-        #im_prev = self.cam.getImage()
         if self.cam.im is not None:
             im_prev = self.cam.im
-            #print(self.mode)
-            #print('Red: ' + str(self.network.activated))
-            #print('Tracker: ' + str(self.tracker.activated))
 
             im = QtGui.QImage(im_prev, im_prev.shape[1], im_prev.shape[0],
                               QtGui.QImage.Format_RGB888)
@@ -147,7 +142,7 @@ class GUI(QtWidgets.QWidget):
 
                         self.network.setInputImage(self.buffer[len(self.buffer) - 1])  # segment last frame in buffer
                         self.network.toggleNetwork()  # network on
-
+                        self.last_segmented = im_segmented
                         # segmentada
                         #cv2.imshow('image_to_net', im_segmented)
                         im_segmented_qimage = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
@@ -179,7 +174,7 @@ class GUI(QtWidgets.QWidget):
                             self.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
 
                     elif not self.tracker.activated and self.network.activated:  # tracker ends but no result from network -> discard frame
-                        print('descartei!')
+                        #print('descartei!')
                         no_track = self.buffer.pop(0)
                         im_detection = QtGui.QImage(no_track.data, no_track.shape[1], no_track.shape[0],
                                                     QtGui.QImage.Format_RGB888)
