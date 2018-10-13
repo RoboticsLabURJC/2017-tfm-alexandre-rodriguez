@@ -12,8 +12,7 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 import numpy as np
-import time
-import cv2
+
 
 class GUI(QtWidgets.QWidget):
 
@@ -101,98 +100,21 @@ class GUI(QtWidgets.QWidget):
         self.buffer = []
         self.network_not_finished = True
 
+
     def setCamera(self, cam):
         ''' Declares the Camera object '''
         self.cam = cam
+
 
     def setNetwork(self, network, t_network):
         ''' Declares the Network object and its corresponding control thread. '''
         self.network = network
         self.t_network = t_network
 
+
     def setTracker(self, tracker):
         self.tracker = tracker
 
-    def update(self):
-        ''' Updates the GUI for every time the thread change '''
-
-        if self.cam.im is not None:
-            im_prev = self.cam.im
-
-            im = QtGui.QImage(im_prev, im_prev.shape[1], im_prev.shape[0],
-                              QtGui.QImage.Format_RGB888)
-            im_scaled = im.scaled(self.im_label.size())
-            self.im_label.setPixmap(QtGui.QPixmap.fromImage(im_scaled))  # We get the original image and display it.
-
-            # Display results
-            if self.mode == 'continuous':
-
-                try:
-
-                    if self.count == 0:
-                        self.network.setInputImage(im_prev)  # segment first frame
-                        self.count += 1
-
-                    im_segmented = self.network.getOutputImage()[0]
-                    self.network_not_finished = self.network.getOutputImage()[1]
-
-                    self.buffer = self.cam.buffer_cam
-
-                    if not self.tracker.activated and not self.network.activated and self.mode == 'continuous':  # segmentation
-
-                        self.network.setInputImage(self.buffer[len(self.buffer) - 1])  # segment last frame in buffer
-                        self.network.toggleNetwork()  # network on
-                        self.last_segmented = im_segmented
-                        # segmentada
-                        #cv2.imshow('image_to_net', im_segmented)
-                        im_segmented_qimage = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
-                                                           QtGui.QImage.Format_RGB888)
-                        im_segmented_scaled = im_segmented_qimage.scaled(self.im_combined_label.size())
-                        self.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-                        self.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-
-                        # tracking configuration
-                        detection = self.network.getOutputDetection()
-                        label = self.network.getOutputLabel()
-                        color_list = self.network.getColorList()
-                        self.tracker.setInputDetection(detection, True)
-                        self.tracker.setInputLabel(label)
-                        self.tracker.setColorList(color_list)
-                        self.tracker.setBuffer(self.buffer)
-                        self.cam.buffer_cam = []  # new buffer
-                        self.tracker.activated = True  # tracker on
-
-                    elif self.tracker.activated and self.mode == 'continuous':  # tracking output
-
-                        im_detection = self.tracker.getOutputImage()
-                        self.tracker.checkProgress()
-                        if im_detection is not None:
-                            im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1], im_detection.shape[0],
-                                                            QtGui.QImage.Format_RGB888)
-                            im_detection_scaled = im_detection.scaled(self.im_segmented_label.size())
-                            self.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
-                            self.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
-
-                    elif not self.tracker.activated and self.network.activated:  # tracker ends but no result from network -> discard frame
-                        #print('descartei!')
-                        no_track = self.buffer.pop(0)
-                        im_detection = QtGui.QImage(no_track.data, no_track.shape[1], no_track.shape[0],
-                                                    QtGui.QImage.Format_RGB888)
-                        im_detection_scaled = im_detection.scaled(self.im_segmented_label.size())
-                        self.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))  # show discarded frames
-
-                except AttributeError:
-                    pass
-
-            else:  # 'once' mode
-                self.network.setInputImage(im_prev)
-                im_segmented = self.network.getOutputImage()[0]
-                im_segmented_qimage = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
-                                                   QtGui.QImage.Format_RGB888)
-                im_segmented_scaled = im_segmented_qimage.scaled(self.im_segmented_label.size())
-                self.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-        else:
-            self.cam.count = 0
 
     def toggleMode(self):
         if self.mode == 'continuous':
@@ -205,6 +127,7 @@ class GUI(QtWidgets.QWidget):
             self.tracker.buffer_out = []
             self.tracker.new_detection = False
 
+
     def toggleNetwork(self):
         self.toggleMode()
         self.network.toggleNetwork()
@@ -213,6 +136,7 @@ class GUI(QtWidgets.QWidget):
             self.button_continuous.setStyleSheet('QPushButton {color: green;}')
         else:
             self.button_continuous.setStyleSheet('QPushButton {color: red;}')
+
 
     def updateOnce(self):
         self.t_network.runOnce()
