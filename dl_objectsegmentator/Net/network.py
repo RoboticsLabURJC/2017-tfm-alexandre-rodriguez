@@ -53,6 +53,7 @@ class Segmentation_Network:
         self.detection = None
         self.label = None
         self.colors = None
+        self.frame = None
 
     def segment(self):
         # Run segmentation
@@ -61,7 +62,7 @@ class Segmentation_Network:
 
             with self.graph.as_default():
                 results = self.model.detect([image], verbose=1)
-                self.activated = False  # apaga
+                self.activated = False
 
             # COCO Class names
             # Index of the class in the list is its ID. For example, to get ID of
@@ -100,23 +101,31 @@ class Segmentation_Network:
 
         self.output_image = [segmented_image, zeros]
 
-    def setInputImage(self, im):
-        ''' Overrides the input image of the network. '''
+    def setInputImage(self, im, frame_number):
+        '''Sets the input image of the network'''
         self.input_image = im
+        self.frame = frame_number
 
     def getOutputImage(self):
-        ''' Returns the image with the segmented objects on it. '''
+        '''Returns the image with the segmented objects on it'''
         return self.output_image
 
+    def getProcessedFrame(self):
+        '''Returns the index of the frame processed by the net'''
+        return self.frame
+
     def getOutputDetection(self):
+        '''Returns the bounding boxes'''
         return self.detection
 
     def getOutputLabel(self):
+        '''Returns the labels'''
         return self.label
 
     def getColorList(self):
+        '''Returns the colors for the bounding boxes'''
         return self.colors
 
     def toggleNetwork(self):
-        ''' Toggles the network on/off '''
+        '''Toggles the network on/off'''
         self.activated = not self.activated

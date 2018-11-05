@@ -28,6 +28,9 @@ class Camera:
         self.lock = threading.Lock()
         self.im = None
         self.buffer = []
+        self.im_once_set = False
+        self.im_segmented = None
+        self.frame_to_process = None
 
         if self.cam.hasproxy():
             original_image = self.cam.getImage()
@@ -96,7 +99,6 @@ class Camera:
 
             if self.im is not None:
 
-                self.buffer.append(self.im)
                 im_prev = self.im
 
                 im = QtGui.QImage(im_prev, im_prev.shape[1], im_prev.shape[0],
@@ -108,23 +110,30 @@ class Camera:
 
                     try:
 
+                        self.buffer.append(self.im)
+
                         if self.gui.count == 0:
-                            self.network.setInputImage(im_prev)  # segment first frame
+                            self.network.setInputImage(im_prev, self.count)  # segment first frame
+                            self.frame_to_process = self.count
                             self.gui.count += 1
 
-                        im_segmented = self.network.getOutputImage()[0]
-                        self.gui.network_not_finished = self.network.getOutputImage()[1]
+                        processed_frame = self.network.getProcessedFrame()
+                        if processed_frame == self.frame_to_process:
+                            self.im_segmented = self.network.getOutputImage()[0]
+
+                        #self.gui.network_not_finished = self.network.getOutputImage()[1]
 
                         if not self.tracker.activated and not self.network.activated:  # segmentation
 
                             self.network.setInputImage(
-                                self.buffer[len(self.buffer) - 1])  # segment last frame in buffer
+                                self.buffer[len(self.buffer) - 1], self.count)  # segment last frame in buffer
+                            self.frame_to_process = self.count
                             self.network.toggleNetwork()  # network on
-                            self.gui.last_segmented = im_segmented
+                            self.gui.last_segmented = self.im_segmented
 
                             #  show segmented image
-                            im_segmented_qimage = QtGui.QImage(im_segmented.data, im_segmented.shape[1],
-                                                               im_segmented.shape[0],
+                            im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
+                                                               self.im_segmented.shape[0],
                                                                QtGui.QImage.Format_RGB888)
                             im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_combined_label.size())
                             self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
@@ -164,12 +173,25 @@ class Camera:
                         pass
 
                 else:  # 'once' mode
-                    self.network.setInputImage(im_prev)
-                    im_segmented = self.network.getOutputImage()[0]
-                    im_segmented_qimage = QtGui.QImage(im_segmented.data, im_segmented.shape[1], im_segmented.shape[0],
-                                                       QtGui.QImage.Format_RGB888)
-                    im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_segmented_label.size())
-                    self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+
+                    if not self.im_once_set:  # initial sets
+                        self.network.setInputImage(im_prev, self.count)
+                        self.frame_to_process = self.count
+                        self.im_once_set = True
+                    if not self.network.getOutputImage()[1]:  # get processed frame
+                        processed_frame = self.network.getProcessedFrame()
+                        if processed_frame == self.frame_to_process:
+                            self.im_segmented = self.network.getOutputImage()[0]
+                    if np.any(self.im_segmented.data):  # set segmented frame
+                        im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1], self.im_segmented.shape[0],
+                                                           QtGui.QImage.Format_RGB888)
+                        im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_segmented_label.size())
+                        self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+                        self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+                        self.im_once_set = False
+                        self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
+
+
 
             else:
                 self.count = 0

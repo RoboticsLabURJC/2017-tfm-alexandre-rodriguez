@@ -18,7 +18,7 @@ class ThreadNetwork(threading.Thread):
 
     def __init__(self, network):
 
-        self.network = network # 'is' for modifying the network (alias it on self.network)
+        self.network = network
         threading.Thread.__init__(self)
 
 
@@ -39,6 +39,6 @@ class ThreadNetwork(threading.Thread):
 
 
     def runOnce(self):
-        '''Processes one image, and then stops again.'''
+        '''Processes one image and stops'''
         if not self.network.activated:
             self.network.segment()
