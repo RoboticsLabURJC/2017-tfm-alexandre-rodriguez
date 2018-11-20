@@ -18,7 +18,6 @@ from PyQt5 import QtGui
 
 
 class Camera:
-
     def __init__(self, cam, gui_cfg):
         ''' Camera class gets images from live video. '''
 
@@ -46,8 +45,7 @@ class Camera:
             print('GUI not set')
             self.detection = None
             self.count2 = 0
-            #self.buffer = []
-
+            # self.buffer = []
 
     def getImage(self):
         ''' Gets the image from the webcam and returns the original image. '''
@@ -58,35 +56,30 @@ class Camera:
             im = self.transformImage(im)
             im = np.reshape(im, (540, 404, 3))
             self.count += 1
-            cv2.putText(im, str(self.count), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), thickness=2)  # numerate frames
+            cv2.putText(im, str(self.count), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255),
+                        thickness=2)  # numerate frames
             return im
-
 
     def transformImage(self, im):
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
         im_resized = cv2.resize(im_resized, (404, 540))
         return im_resized
 
-
     def setGUI(self, gui):
         self.gui = gui
-
 
     def setNetwork(self, network, t_network):
         ''' Declares the Network object and its corresponding control thread. '''
         self.network = network
         self.t_network = t_network
 
-
     def setTracker(self, tracker):
         self.tracker = tracker
 
-
     def toggleNetwork(self):
-        #self.toggleMode() sobra?
+        # self.toggleMode() sobra?
         self.network.toggleNetwork()
         self.tracker.activated = False
-
 
     def update(self):
         ''' Updates the camera every time the thread changes. '''
@@ -102,7 +95,7 @@ class Camera:
                 im_prev = self.im
 
                 im = QtGui.QImage(im_prev, im_prev.shape[1], im_prev.shape[0],
-                              QtGui.QImage.Format_RGB888)
+                                  QtGui.QImage.Format_RGB888)
                 im_scaled = im.scaled(self.gui.im_label.size())
                 self.gui.im_label.setPixmap(QtGui.QPixmap.fromImage(im_scaled))  # show live images
 
@@ -121,7 +114,7 @@ class Camera:
                         if processed_frame == self.frame_to_process:
                             self.im_segmented = self.network.getOutputImage()[0]
 
-                        #self.gui.network_not_finished = self.network.getOutputImage()[1]
+                        # self.gui.network_not_finished = self.network.getOutputImage()[1]
 
                         if not self.tracker.activated and not self.network.activated:  # segmentation
 
@@ -155,19 +148,20 @@ class Camera:
                             im_detection = self.tracker.getOutputImage()
                             self.tracker.checkProgress()
                             if im_detection is not None:
-                                im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1], im_detection.shape[0],
-                                                                QtGui.QImage.Format_RGB888)
+                                im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
+                                                            im_detection.shape[0],
+                                                            QtGui.QImage.Format_RGB888)
                                 im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
                                 self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                                 self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
 
-                        # elif not self.tracker.activated and self.network.activated:  # tracker ends but no result from network -> discard frame
-                        #     #print('descartei!')
-                        #     no_track = self.buffer.pop(0)
-                        #     im_detection = QtGui.QImage(no_track.data, no_track.shape[1], no_track.shape[0],
-                        #                                 QtGui.QImage.Format_RGB888)
-                        #     im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
-                        #     self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))  # show discarded frames
+                                # elif not self.tracker.activated and self.network.activated:  # tracker ends but no result from network -> discard frame
+                                #     #print('descartei!')
+                                #     no_track = self.buffer.pop(0)
+                                #     im_detection = QtGui.QImage(no_track.data, no_track.shape[1], no_track.shape[0],
+                                #                                 QtGui.QImage.Format_RGB888)
+                                #     im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
+                                #     self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))  # show discarded frames
 
                     except AttributeError:
                         pass
@@ -183,7 +177,8 @@ class Camera:
                         if processed_frame == self.frame_to_process:
                             self.im_segmented = self.network.getOutputImage()[0]
                     if np.any(self.im_segmented.data):  # set segmented frame
-                        im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1], self.im_segmented.shape[0],
+                        im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
+                                                           self.im_segmented.shape[0],
                                                            QtGui.QImage.Format_RGB888)
                         im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_segmented_label.size())
                         self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
@@ -198,7 +193,7 @@ class Camera:
 
         else:  # gui off, writes results in .jpg <- review code!!
 
-            im = self.getImage() # use self.im directly ?
+            im = self.getImage()  # use self.im directly ?
 
             try:
 
@@ -219,7 +214,8 @@ class Camera:
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
 
-                        self.network.setInputImage(self.buffer_cam[len(self.buffer_cam) - 1])  # segment last frame in buffer
+                        self.network.setInputImage(
+                            self.buffer_cam[len(self.buffer_cam) - 1])  # segment last frame in buffer
                         self.network.toggleNetwork()  # network on
                         # segmentada
                         cv2.imwrite(str(self.count) + '.jpg', im_segmented)  # BGR
