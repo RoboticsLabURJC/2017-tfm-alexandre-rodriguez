@@ -64,8 +64,6 @@ class Tracker:
                 self.image_counter += 1
             elif not self.tracker_slow and not self.tracker_fast and len(self.buffer_in) > 0:
                 self.image = self.buffer_in.pop(0)
-                self.counter_slow = 0  # reset counters when changing fps
-                self.counter_fast = 0
 
             if self.activated:  # avoid to continue the loop if not activated
                 for i in range(len(detection)):
@@ -98,8 +96,9 @@ class Tracker:
                     if self.counter_slow == 5:
                         self.counter_slow = 0
                         self.tracker_slow = True
-                elif not (0 in self.last_fps_buffer) and self.tracker_slow == True:
+                elif not (0 in self.last_fps_buffer) and 2.5 < avg_fps < 15:
                     self.tracker_slow = False
+                    self.tracker_fast = False
                 elif avg_fps > 15 and self.counter_fast <= 2:
                     self.counter_fast += 1
                     self.tracker_fast = True
@@ -153,6 +152,9 @@ class Tracker:
             self.buffer_out = []
             self.image_counter = 0
             self.tracker_slow = False
+            self.tracker_fast = False
+            self.counter_slow = 0
+            self.counter_fast = 0
             self.new_detection = False
             print('Tracker OFF')
 
