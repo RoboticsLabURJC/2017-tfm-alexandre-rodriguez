@@ -23,7 +23,7 @@ class ThreadTracker(threading.Thread):
 
     def run(self):
         ''' Updates the thread. '''
-        while(True):
+        while True:
             start_time = datetime.now()
             if self.tracker.activated:
                 self.tracker.track()
@@ -33,5 +33,5 @@ class ThreadTracker(threading.Thread):
             dtms = ((dt.days * 24 * 60 * 60 + dt.seconds) * 1000 +
                     dt.microseconds / 1000.0)
 
-            if(dtms < t_cycle):
+            if dtms < t_cycle:
                 time.sleep((t_cycle - dtms) / 1000.0)

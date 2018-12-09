@@ -15,21 +15,19 @@ import numpy as np
 
 
 class GUI(QtWidgets.QWidget):
-
     updGUI = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         ''' GUI class creates the GUI that we're going to use to
-        preview the live video as well as the results of the segmentation.
-        '''
+        preview the live video as well as the results of the application. '''
 
         QtWidgets.QWidget.__init__(self, parent)
-        self.setWindowTitle("Object Segmentator (Keras-based Mask R-CNN trained with a COCO database)")
+        self.setWindowTitle("Object Tracker")
         self.resize(1200, 1100)
         self.move(150, 50)
         self.updGUI.connect(self.update)
 
-        # Original image labels
+        # original image labels
         self.im_label = QtWidgets.QLabel(self)
         self.im_label.resize(480, 320)
         self.im_label.move(70, 40)
@@ -40,13 +38,13 @@ class GUI(QtWidgets.QWidget):
         self.im_label_txt.setText('Input')
         self.im_label_txt.show()
 
-        # Black image at the beginning
+        # black image at the beginning
         zeros = np.zeros((480, 320), dtype=np.int32)
         zeros = QtGui.QImage(zeros.data, zeros.shape[1], zeros.shape[0],
-                                    QtGui.QImage.Format_RGB888)
+                             QtGui.QImage.Format_RGB888)
         zeros_scaled = zeros.scaled(self.im_label.size())
 
-        # Combined image labels
+        # combined image labels
         self.im_combined_label = QtWidgets.QLabel(self)
         self.im_combined_label.resize(480, 320)
         self.im_combined_label.move(610, 40)
@@ -58,7 +56,7 @@ class GUI(QtWidgets.QWidget):
         self.im_combined_label_txt.setText('Combined')
         self.im_combined_label_txt.show()
 
-        # Segmented image labels
+        # neural network image labels
         self.im_segmented_label = QtWidgets.QLabel(self)
         self.im_segmented_label.resize(480, 320)
         self.im_segmented_label.move(70, 410)
@@ -70,7 +68,7 @@ class GUI(QtWidgets.QWidget):
         self.im_segmented_label_txt.setText('Net')
         self.im_segmented_label_txt.show()
 
-        # Tracked image labels
+        # tracked image labels
         self.im_tracked_label = QtWidgets.QLabel(self)
         self.im_tracked_label.resize(480, 320)
         self.im_tracked_label.move(610, 410)
@@ -82,41 +80,36 @@ class GUI(QtWidgets.QWidget):
         self.im_tracked_label_txt.setText('Tracker')
         self.im_tracked_label_txt.show()
 
-        # Button for processing a single frame
+        # button for processing a single frame
         self.button_now = QtWidgets.QPushButton('Run now', self)
         self.button_now.move(1140, 60)
         self.button_now.clicked.connect(self.updateOnce)
 
-        # Button for processing continuous frames
+        # button for processing continuous frames
         self.button_continuous = QtWidgets.QPushButton('Run continuous', self)
         self.button_continuous.move(1120, 100)
-        self.button_continuous.clicked.connect(self.toggleNetwork)
+        self.button_continuous.clicked.connect(self.buttonClicked)
         self.button_continuous.setStyleSheet('QPushButton {color: green;}')
 
         self.mode = 'continuous'
-        self.detection = None
-        self.last_segmented = None
         self.count = 0
         self.buffer = []
-        self.network_not_finished = True
-
 
     def setCamera(self, cam):
-        ''' Declares the Camera object '''
+        ''' Declares the Camera object. '''
         self.cam = cam
-
 
     def setNetwork(self, network, t_network):
         ''' Declares the Network object and its corresponding control thread. '''
         self.network = network
         self.t_network = t_network
 
-
     def setTracker(self, tracker):
+        ''' Declares the Tracker object. '''
         self.tracker = tracker
 
-
     def toggleMode(self):
+        ''' Changes GUI mode. '''
         if self.mode == 'continuous':
             self.mode = 'once'
         else:
@@ -127,8 +120,8 @@ class GUI(QtWidgets.QWidget):
             self.tracker.buffer_out = []
             self.tracker.new_detection = False
 
-
-    def toggleNetwork(self):
+    def buttonClicked(self):
+        ''' Run continuous button is clicked. '''
         self.toggleMode()
         self.network.toggleNetwork()
         self.tracker.activated = False
@@ -137,6 +130,6 @@ class GUI(QtWidgets.QWidget):
         else:
             self.button_continuous.setStyleSheet('QPushButton {color: red;}')
 
-
     def updateOnce(self):
+        ''' Run once mode. '''
         self.t_network.runOnce()

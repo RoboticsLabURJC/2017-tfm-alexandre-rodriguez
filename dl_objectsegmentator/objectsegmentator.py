@@ -3,9 +3,8 @@
 #
 # @author: alexandre2r
 #
-# It receives images from a live video and classify them into digits
-# employing a convolutional neural network, based on TensorFlow Deep
-# Learning middleware.
+# It receives images from a live video and classify them into object classes using CNNs and Tracking,
+# based on TensorFlow Deep Learning middleware.
 # It shows the live video and the results in a GUI.
 #
 # Based on @nuriaoyaga code:
@@ -49,10 +48,8 @@ if __name__ == '__main__':
     except IndexError:
         raise SystemExit('Missing GUI configuration. Usage: python2 objectsegmentator.py objectsegmentator.yml on')
 
-
     jdrc = comm.init(cfg, 'ObjectSegmentator')
     proxy = jdrc.getCameraClient('ObjectSegmentator.Camera')
-
 
     network = Segmentation_Network()
     # Threading Network
@@ -71,6 +68,7 @@ if __name__ == '__main__':
         cam.setGUI(window)
         cam.setNetwork(network, t_network)
         cam.setTracker(tracker)
+
         # Threading camera
         t_cam = ThreadCamera(cam)
         t_cam.start()

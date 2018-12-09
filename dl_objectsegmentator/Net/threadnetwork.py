@@ -21,10 +21,9 @@ class ThreadNetwork(threading.Thread):
         self.network = network
         threading.Thread.__init__(self)
 
-
     def run(self):
         ''' Updates the thread. '''
-        while(True):
+        while True:
             start_time = datetime.now()
             if self.network.activated:
                 self.network.segment()
@@ -34,11 +33,10 @@ class ThreadNetwork(threading.Thread):
             dtms = ((dt.days * 24 * 60 * 60 + dt.seconds) * 1000 +
                     dt.microseconds / 1000.0)
 
-            if(dtms < t_cycle):
+            if dtms < t_cycle:
                 time.sleep((t_cycle - dtms) / 1000.0)
 
-
     def runOnce(self):
-        '''Processes one image and stops'''
+        ''' Processes one image and stops. '''
         if not self.network.activated:
             self.network.segment()

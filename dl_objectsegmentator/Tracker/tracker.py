@@ -29,7 +29,50 @@ class Tracker:
         self.first_image_to_track = True
         self.image = None
 
+    def imageToTrack(self):
+        ''' Assigns a new image to track depending on certain conditions. '''
+        if self.tracker_slow:
+            if len(self.buffer_in) > 5:
+                self.buffer_in.pop(0)
+                self.buffer_in.pop(0)
+                self.buffer_in.pop(0)
+                self.buffer_in.pop(0)
+                self.image = self.buffer_in.pop(0)  # jump frames
+            elif len(self.buffer_in) > 0:
+                self.image = self.buffer_in.pop(0)
+        elif self.tracker_fast and self.counter_fast == 1 and len(self.buffer_in) > 0:
+            self.image = self.buffer_in.pop(0)
+        elif self.first_image_to_track:
+            self.image = self.buffer_in.pop(0)
+            self.image_counter += 1
+        elif not self.tracker_slow and not self.tracker_fast and len(self.buffer_in) > 0:
+            self.image = self.buffer_in.pop(0)
+
+    def calculateFPS(self, start_time):
+        ''' Calculates the average FPS. '''
+        fps_rate = 1.0 / (time.time() - start_time)
+        self.last_fps_buffer.pop(0)
+        self.last_fps_buffer.append(fps_rate)
+        avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
+        print('FPS avg: ' + str(avg_fps))
+        return avg_fps
+
+    def trackerSpeed(self, avg_fps):
+        ''' Obtains the tracker speed. '''
+        if not (0 in self.last_fps_buffer) and avg_fps < 2.5:  # tracker slow
+            self.counter_slow += 1
+            if self.counter_slow == 5:
+                self.counter_slow = 0
+                self.tracker_slow = True
+        elif not (0 in self.last_fps_buffer) and 2.5 < avg_fps < 35:  # tracker normal
+            self.tracker_slow = False
+            self.tracker_fast = False
+        elif avg_fps > 35 and self.counter_fast <= 2:  # tracker fast
+            self.counter_fast += 1
+            self.tracker_fast = True
+
     def track(self):
+        ''' The tracking function. '''
 
         detection = self.input_detection
 
@@ -47,23 +90,7 @@ class Tracker:
         if self.image_counter != self.len_buffer_in and detection is not None:
 
             start_time = time.time()
-
-            if self.tracker_slow:
-                if len(self.buffer_in) > 5:
-                    self.buffer_in.pop(0)
-                    self.buffer_in.pop(0)
-                    self.buffer_in.pop(0)
-                    self.buffer_in.pop(0)
-                    self.image = self.buffer_in.pop(0)  # jump frames
-                elif len(self.buffer_in) > 0:
-                    self.image = self.buffer_in.pop(0)
-            elif self.tracker_fast and self.counter_fast == 1 and len(self.buffer_in) > 0:
-                self.image = self.buffer_in.pop(0)
-            elif self.first_image_to_track:
-                self.image = self.buffer_in.pop(0)
-                self.image_counter += 1
-            elif not self.tracker_slow and not self.tracker_fast and len(self.buffer_in) > 0:
-                self.image = self.buffer_in.pop(0)
+            self.imageToTrack()
 
             if self.activated:  # avoid to continue the loop if not activated
                 for i in range(len(detection)):
@@ -85,51 +112,40 @@ class Tracker:
                                     (0, 0, 0), thickness=2, lineType=2)
 
                 self.buffer_out.append(self.image)
-                fps_rate = 1.0 / (time.time() - start_time)
-                self.last_fps_buffer.pop(0)
-                self.last_fps_buffer.append(fps_rate)
-                avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
-                print('Average fps: ' + str(avg_fps))
-
-                if not (0 in self.last_fps_buffer) and avg_fps < 2.5:
-                    self.counter_slow += 1
-                    if self.counter_slow == 5:
-                        self.counter_slow = 0
-                        self.tracker_slow = True
-                elif not (0 in self.last_fps_buffer) and 2.5 < avg_fps < 15:
-                    self.tracker_slow = False
-                    self.tracker_fast = False
-                elif avg_fps > 15 and self.counter_fast <= 2:
-                    self.counter_fast += 1
-                    self.tracker_fast = True
+                avg_fps = self.calculateFPS(start_time)
+                self.trackerSpeed(avg_fps)
 
             else:
                 self.image_counter = 0  # reset when toggling modes (activated=False)
 
     def setBuffer(self, buf):
-        self.buffer_in = buf  # fixes overlap segmentation+tracking in net result
+        ''' Set buffer input of tracker. '''
+        self.buffer_in = buf
         self.len_buffer_in = len(self.buffer_in)
         print('New buffer with length ' + str(len(self.buffer_in)))
 
     def setInputDetection(self, bbox, state):
+        ''' Set bboxes coordinates and state of new detection. '''
         self.input_detection = bbox
         self.new_detection = state
 
     def setInputLabel(self, label):
+        ''' Set list of labels. '''
         self.input_label = label
 
     def setColorList(self, color_list):
+        ''' Set list of colors of the bboxes. '''
         self.color_list = color_list
 
     def getOutputImage(self):
-
-        if self.input_detection is not None and self.buffer_out and not self.tracker_slow and not self.tracker_fast:  # check if list is not empty
+        ''' Get tracked image. '''
+        if self.input_detection is not None and self.buffer_out and not self.tracker_slow and not self.tracker_fast:
             self.image_counter += 1
             return self.buffer_out.pop(0)  # returns last detection and deletes it
         elif self.buffer_out and self.tracker_slow:
             if len(self.buffer_in) > 5:
                 self.image_counter += 5
-                return self.buffer_out.pop(0)  # image counter incremented in tracking
+                return self.buffer_out.pop(0)
             else:
                 self.image_counter += 1
                 return self.buffer_out.pop(0)
@@ -146,7 +162,7 @@ class Tracker:
             return None
 
     def checkProgress(self):
-        print(self.image_counter)
+        ''' Checks tracker progress and resets it if tracking is done. '''
         if self.image_counter == self.len_buffer_in:
             self.toggleTracker()
             self.buffer_out = []
@@ -159,5 +175,5 @@ class Tracker:
             print('Tracker OFF')
 
     def toggleTracker(self):
-        ''' Toggles the tracker on/off '''
+        ''' Toggles the tracker (on/off). '''
         self.activated = not self.activated
