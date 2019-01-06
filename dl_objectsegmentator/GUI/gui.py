@@ -95,18 +95,6 @@ class GUI(QtWidgets.QWidget):
         self.count = 0
         self.buffer = []
 
-    def setCamera(self, cam):
-        ''' Declares the Camera object. '''
-        self.cam = cam
-
-    def setNetwork(self, network, t_network):
-        ''' Declares the Network object and its corresponding control thread. '''
-        self.network = network
-        self.t_network = t_network
-
-    def setTracker(self, tracker):
-        ''' Declares the Tracker object. '''
-        self.tracker = tracker
 
     def toggleMode(self):
         ''' Changes GUI mode. '''

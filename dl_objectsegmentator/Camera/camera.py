@@ -11,7 +11,6 @@
 # https://github.com/JdeRobot/dl-objectdetector
 #
 
-import threading
 import numpy as np
 import cv2
 from PyQt5 import QtGui
@@ -21,25 +20,46 @@ class Camera:
     def __init__(self, cam, gui_cfg):
         ''' Camera class gets images from live video. '''
 
-        self.cam = cam
         self.frame_counter = 0
         self.gui_cfg = gui_cfg
-        self.lock = threading.Lock()
         self.im = None
         self.buffer = []
         self.im_once_set = False
         self.im_segmented = None
         self.frame_to_process = None
 
-        if self.cam.hasproxy():
-            original_image = self.cam.getImage()
-            self.im_height = original_image.height
-            self.im_width = original_image.width
+        if hasattr(cam, 'hasproxy'):
+            self.cam = cam
+            self.source = 'stream_camera'
+            self.im = self.getImage()
+            self.im_height = self.im.height
+            self.im_width = self.im.width
 
-            print('Image size: {0}x{1} px'.format(
-                self.im_width, self.im_height))
+        elif isinstance(cam, int):
+            self.cam = cv2.VideoCapture(cam)
+            self.source = 'local_camera'
+            if not self.cam.isOpened():
+                print("%d is not a valid device index in this machine." % cam)
+                raise SystemExit("Please check your camera id (hint: ls /dev)")
+            self.im_width = int(self.cam.get(3))
+            self.im_height = int(self.cam.get(4))
+
+        elif isinstance(cam, str):
+            from os import path
+            video_path = path.expanduser(cam)
+            if not path.isfile(video_path):
+                raise SystemExit('%s does not exists. Please check the path.' % video_path)
+            self.cam = cv2.VideoCapture(video_path)
+            if not self.cam.isOpened():
+                print("%s is not a valid video path." % video_path)
+            self.im_width = int(self.cam.get(3))
+            self.im_height = int(self.cam.get(4))
+
         else:
             raise SystemExit("Interface camera not connected")
+
+        print('Image size: {0}x{1} px'.format(
+            self.im_width, self.im_height))
 
         if self.gui_cfg == 'off':
             print('GUI not set')
@@ -48,22 +68,26 @@ class Camera:
             # self.buffer = []
 
     def getImage(self):
-        ''' Gets the image from the webcam and returns the original image. '''
+        ''' Gets the image from the source and returns it resized and tagged with the frame number. '''
 
-        if self.cam:
+        if self.cam and self.source == 'stream_camera':
             im = self.cam.getImage()
             im = np.frombuffer(im.data, dtype=np.uint8)
-            im = self.resizeImage(im)
-            im = np.reshape(im, (540, 404, 3))
-            self.frame_counter += 1
-            cv2.putText(im, str(self.frame_counter), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255),
-                        thickness=2)  # numerate frames
-            return im
+        elif self.cam and (self.source == 'local_camera' or self.source == 'local_video'):
+            _, frame = self.cam.read()
+            im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        im = self.resizeImage(im)
+        im = np.reshape(im, (540, 404, 3))
+        self.frame_counter += 1
+        cv2.putText(im, str(self.frame_counter), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255),
+                    thickness=2)  # numerate frames
+        return im
 
     def resizeImage(self, im):
         ''' Resizes the image. '''
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
-        im_resized = cv2.resize(im_resized, (404, 540))
+        im_resized = cv2.resize(im_resized, (404, 540), cv2.INTER_NEAREST)
         return im_resized
 
     def setGUI(self, gui):
@@ -99,9 +123,7 @@ class Camera:
     def update(self):
         ''' Main function: controls the flow of the application. '''
         if self.cam:
-            self.lock.acquire()
             self.im = self.getImage()
-            self.lock.release()
 
         if self.gui_cfg == 'on':  # control GUI from camera thread
 

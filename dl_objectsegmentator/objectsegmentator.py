@@ -18,40 +18,96 @@
 
 import sys
 import signal
+import yaml
 
 from PyQt5 import QtWidgets
 
-from Camera.camera import Camera
 from Camera.threadcamera import ThreadCamera
 from GUI.gui import GUI
 from GUI.threadgui import ThreadGUI
-from Net.network import Segmentation_Network
 from Net.threadnetwork import ThreadNetwork
 from Tracker.tracker import Tracker
 from Tracker.threadtracker import ThreadTracker
 
-import config
-import comm
-
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+def selectVideoSource(cfg, gui_cfg):
+    """
+    @param cfg: configuration
+    @return cam: selected camera
+    @raise SystemExit in case of unsupported video source
+    """
+    source = cfg['ObjectTracker']['Source']
+    from Camera.camera import Camera
+    if source.lower() == 'local':
+        #from Camera.local_camera import Camera
+        cam_idx = cfg['ObjectTracker']['Local']['DeviceNo']
+        print('  Chosen source: local camera (index %d)' % (cam_idx))
+        cam = Camera(cam_idx, gui_cfg)
+    elif source.lower() == 'video':
+        #from Camera.local_video import Camera
+        video_path = cfg['ObjectTracker']['Video']['Path']
+        print('  Chosen source: local video (%s)' % (video_path))
+        cam = Camera(video_path, gui_cfg)
+    elif source.lower() == 'stream':
+        # comm already prints the source technology (ICE/ROS)
+        import comm
+        import config
+        cfg = config.load(sys.argv[1])
+        jdrc = comm.init(cfg, 'ObjectTracker')
+        proxy = jdrc.getCameraClient('ObjectTracker.Stream')
+        #from Camera.stream_camera import Camera
+        cam = Camera(proxy, gui_cfg)
+    else:
+        raise SystemExit(('%s not supported! Supported source: Local, Video, Stream') % (source))
+
+    return cam
+
+
+def selectNetwork(cfg):
+    """
+    @param cfg: configuration
+    @return net_prop, DetectionNetwork: network properties and Network class
+    @raise SystemExit in case of invalid network
+    """
+    net_prop = cfg['ObjectTracker']['Network']
+    framework = net_prop['Framework']
+    if framework.lower() == 'tensorflow':
+        from Net.TensorFlow.network import DetectionNetwork
+    elif framework.lower() == 'keras':
+        sys.path.append('Net/Keras')
+        from Net.Keras.network import DetectionNetwork
+    else:
+        raise SystemExit(('%s not supported! Supported frameworks: Keras, TensorFlow') % (framework))
+    return net_prop, DetectionNetwork
+
+
+def readConfig():
+    try:
+        with open(sys.argv[1], 'r') as stream:
+            return yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+        raise SystemExit('Error: Cannot read/parse YML file. Check YAML syntax.')
+    except:
+        raise SystemExit('\n\tUsage: python2 objecttracker.py objecttracker.yml\n')
+
 
 if __name__ == '__main__':
 
-    # Creation of the camera through the comm-ICE proxy.
-    try:
-        cfg = config.load(sys.argv[1])
-    except IndexError:
-        raise SystemExit('Missing YML file. Usage: python2 objectsegmentator.py objectsegmentator.yml on')
-
+    # cfg to specify the use of GUI
+    gui_cfg = None
     try:
         gui_cfg = sys.argv[2]
     except IndexError:
-        raise SystemExit('Missing GUI configuration. Usage: python2 objectsegmentator.py objectsegmentator.yml on')
+        raise SystemExit('Missing GUI configuration. Usage: python2 objecttracker.py objecttracker.yml on')
 
-    jdrc = comm.init(cfg, 'ObjectSegmentator')
-    proxy = jdrc.getCameraClient('ObjectSegmentator.Camera')
+    cfg = readConfig()
+    cam = selectVideoSource(cfg, gui_cfg)
+    net_prop, DetectionNetwork = selectNetwork(cfg)
 
-    network = Segmentation_Network()
+    network = DetectionNetwork
     # Threading Network
     t_network = ThreadNetwork(network)
     t_network.start()
@@ -64,7 +120,7 @@ if __name__ == '__main__':
     if gui_cfg == 'on':
         app = QtWidgets.QApplication(sys.argv)
         window = GUI()
-        cam = Camera(proxy, gui_cfg)
+        #cam = Camera(proxy, gui_cfg)
         cam.setGUI(window)
         cam.setNetwork(network, t_network)
         cam.setTracker(tracker)
@@ -72,9 +128,6 @@ if __name__ == '__main__':
         # Threading camera
         t_cam = ThreadCamera(cam)
         t_cam.start()
-        window.setCamera(cam)
-        window.setNetwork(network, t_network)
-        window.setTracker(tracker)
         window.show()
 
         # Threading GUI
@@ -84,7 +137,7 @@ if __name__ == '__main__':
         sys.exit(app.exec_())
 
     else:  # gui off
-        cam = Camera(proxy, gui_cfg)
+        #cam = Camera(proxy, gui_cfg)
         # Threading camera
         t_cam = ThreadCamera(cam)
         t_cam.start()

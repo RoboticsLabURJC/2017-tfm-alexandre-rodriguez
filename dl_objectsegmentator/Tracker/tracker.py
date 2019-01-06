@@ -1,4 +1,3 @@
-import threading
 import cv2
 import time
 
@@ -8,9 +7,6 @@ class Tracker:
 
         self.tracker = cv2.MultiTracker_create()
         print("Tracker created!")
-
-        self.lock = threading.Lock()
-
         self.activated = False
         self.input_detection = None
         self.new_detection = False
