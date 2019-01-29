@@ -4,6 +4,8 @@
 *.pyc
 *.proto
 *.pbtxt
+*.config
 
 dl-objecttracker/Net/Tensorflow/faster_rcnn_inception_v2_coco_2018_01_28/
 dl-objecttracker/Net/Tensorflow/mask_rcnn_inception_v2_coco_2018_01_28/
+dl-objecttracker/.idea/
