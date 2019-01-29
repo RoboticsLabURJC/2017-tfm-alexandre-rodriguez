@@ -1,0 +1,22 @@
+ObjectTracker:
+  Source: Video # Local (local camera), Video (local file), Stream (ROS/ICE)
+
+  Local:
+    DeviceNo: 0 # Device number for the desired webcam
+
+  Video:
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/video_for_tests.mp4"
+
+  Stream:
+    Server: ICE # "ROS", "ICE", "Deactivate"
+    Proxy: "cameraA:tcp -h localhost -p 9999"
+    Format: RGB8
+    Topic: "/usb_cam/image_raw"
+    Name: cameraA
+
+  Network:
+    Framework: Tensorflow  # Currently supported: "Keras" or "TensorFlow"
+    #Model: VGG_VOC0712_SSD_300x300_iter_120000_full.h5
+    Model: frozen_inference_graph.pb
+    Dataset: COCO # available: VOC, COCO, KITTI, OID, PET
+  NodeName: dl-objecttracker
