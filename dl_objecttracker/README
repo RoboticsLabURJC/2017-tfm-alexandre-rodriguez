@@ -1,6 +1,12 @@
 How to launch the object tracker?
 
-    Terminal: $ python2 objecttracker.py objecttracker.yml
+If you want GUI:
+    
+	$ python2 objecttracker.py objecttracker.yml on
+
+Else, you prefer to save the results as .jpg images:
+	
+	$ python2 objecttracker.py objecttracker.yml off
 
 Modify the configuration file (.yml) accordingly.
  - At the moment, the program only supports Tensorflow (Network->Framework). The Keras implementation will be available soon.
