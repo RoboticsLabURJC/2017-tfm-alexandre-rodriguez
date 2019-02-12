@@ -114,28 +114,22 @@ if __name__ == '__main__':
     t_tracker = ThreadTracker(tracker)
     t_tracker.start()
 
+    app = QtWidgets.QApplication(sys.argv)
+    window = GUI()
+    cam.setGUI(window)
+    cam.setNetwork(network, t_network)
+    cam.setTracker(tracker)
+
+    # Threading camera
+    t_cam = ThreadCamera(cam)
+    t_cam.start()
+    window.setNetwork(network, t_network)
+    window.setTracker(tracker)
+
     if gui_cfg == 'on':
-        app = QtWidgets.QApplication(sys.argv)
-        window = GUI()
-        cam.setGUI(window)
-        cam.setNetwork(network, t_network)
-        cam.setTracker(tracker)
-
-        # Threading camera
-        t_cam = ThreadCamera(cam)
-        t_cam.start()
         window.show()
-
         # Threading GUI
         t_gui = ThreadGUI(window)
         t_gui.start()
 
-        sys.exit(app.exec_())
-
-    else:  # gui off
-        #cam = Camera(proxy, gui_cfg)
-        # Threading camera
-        t_cam = ThreadCamera(cam)
-        t_cam.start()
-        cam.setNetwork(network, t_network)
-        cam.setTracker(tracker)
+    sys.exit(app.exec_())
