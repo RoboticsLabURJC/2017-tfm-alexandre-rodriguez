@@ -72,9 +72,6 @@ class Camera:
 
         if self.gui_cfg == 'off':
             print('GUI not set')
-            self.detection = None
-            self.count2 = 0
-            # self.buffer = []
 
     def getImage(self):
         ''' Gets the image from the source and returns it resized and tagged with the frame number. '''
@@ -136,38 +133,38 @@ class Camera:
         if self.cam:
             self.im = self.getImage()
 
-        if self.gui_cfg == 'on':  # control GUI from camera thread
+        if self.im is not None:
 
-            if self.im is not None:
-
+            if self.gui_cfg == 'on':  # control GUI from camera thread
                 im = QtGui.QImage(self.im, self.im.shape[1], self.im.shape[0],
                                   QtGui.QImage.Format_RGB888)
                 im_scaled = im.scaled(self.gui.im_label.size())
                 self.gui.im_label.setPixmap(QtGui.QPixmap.fromImage(im_scaled))  # show live images
 
-                if self.gui.mode == 'continuous':
+            if self.gui.mode == 'continuous':
 
-                    try:
+                try:
 
-                        self.buffer.append(self.im)
+                    self.buffer.append(self.im)
 
-                        if self.gui.count == 0:
-                            self.network.setInputImage(self.im, self.frame_counter)  # segment first frame
-                            self.frame_to_process = self.frame_counter
-                            self.gui.count += 1
+                    if self.gui.count == 0:
+                        self.network.setInputImage(self.im, self.frame_counter)  # segment first frame
+                        self.frame_to_process = self.frame_counter
+                        self.gui.count += 1
 
-                        processed_frame = self.network.getProcessedFrame()
+                    processed_frame = self.network.getProcessedFrame()
 
-                        if processed_frame == self.frame_to_process:
-                            self.im_segmented = self.network.getOutputImage()[0]
+                    if processed_frame == self.frame_to_process:
+                        self.im_segmented = self.network.getOutputImage()[0]
 
-                        if not self.tracker.activated and not self.network.activated:  # segmentation
+                    if not self.tracker.activated and not self.network.activated:  # segmentation
 
-                            self.network.setInputImage(
-                                self.buffer[len(self.buffer) - 1], self.frame_counter)  # segment last frame in buffer
-                            self.frame_to_process = self.frame_counter
-                            self.network.toggleNetwork()  # network on
+                        self.network.setInputImage(
+                            self.buffer[len(self.buffer) - 1], self.frame_counter)  # segment last frame in buffer
+                        self.frame_to_process = self.frame_counter
+                        self.network.toggleNetwork()  # network on
 
+                        if self.gui_cfg == 'on':
                             #  show segmented image
                             im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
                                                                self.im_segmented.shape[0],
@@ -175,93 +172,54 @@ class Camera:
                             im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_combined_label.size())
                             self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
                             self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+                        else:  # gui off, save image
+                            cv2.imwrite(str(self.frame_counter) + '.jpg', self.im_segmented)  # in BGR
 
-                            # tracking configuration
-                            self.trackerConfiguration()
+                        # tracking configuration
+                        self.trackerConfiguration()
 
-                        elif self.tracker.activated:  # get tracker output
+                    elif self.tracker.activated:  # get tracker output
 
-                            im_detection = self.tracker.getOutputImage()
-                            self.tracker.checkProgress()
-                            if im_detection is not None:
+                        im_detection = self.tracker.getOutputImage()
+                        self.tracker.checkProgress()
+                        if im_detection is not None:
+                            if self.gui_cfg == 'on':
                                 im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
                                                             im_detection.shape[0],
                                                             QtGui.QImage.Format_RGB888)
                                 im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
                                 self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                                 self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+                            else:  # gui off, save image
+                                saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
+                                cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
 
-                    except AttributeError:
-                        pass
+                except AttributeError:
+                    pass
 
-                else:  # 'once' mode
+            else:  # 'once' mode
 
-                    if not self.im_once_set:  # initial sets
-                        self.network.setInputImage(self.im, self.frame_counter)
-                        self.frame_to_process = self.frame_counter
-                        self.im_once_set = True
-                    if not self.network.getOutputImage()[1]:  # get processed frame
-                        processed_frame = self.network.getProcessedFrame()
-                        if processed_frame == self.frame_to_process:
-                            self.im_segmented = self.network.getOutputImage()[0]
-                    if np.any(self.im_segmented.data):  # set segmented frame
+                if not self.im_once_set:  # initial sets
+                    self.network.setInputImage(self.im, self.frame_counter)
+                    self.frame_to_process = self.frame_counter
+                    self.im_once_set = True
+                if not self.network.getOutputImage()[1]:  # get processed frame
+                    processed_frame = self.network.getProcessedFrame()
+                    if processed_frame == self.frame_to_process:
+                        self.im_segmented = self.network.getOutputImage()[0]
+                if np.any(self.im_segmented.data):  # set segmented frame
+                    if self.gui_cfg == 'on':
                         im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
                                                            self.im_segmented.shape[0],
                                                            QtGui.QImage.Format_RGB888)
                         im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_segmented_label.size())
                         self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
                         self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-                        self.im_once_set = False
-                        self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
+                    else:  # gui off, save image
+                        saved_image = cv2.cvtColor(self.im_segmented, cv2.COLOR_BGR2RGB)
+                        cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)
+                    self.im_once_set = False
+                    self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
-            else:
-                self.frame_counter = 0
-
-        else:  # gui off, writes results in .jpg <- review code!! change according to gui on
-
-            im = self.getImage()
-
-            try:
-
-                if self.count2 == 0:
-                    self.network.setInputImage(im)  # segment first frame
-                    self.count2 += 1
-
-                im_segmented = self.network.getOutputImage()[0]
-                zeros = self.network.getOutputImage()[1]
-
-                if zeros:  # first frames
-
-                    self.buffer_cam.append(im)
-
-                else:
-
-                    self.buffer_cam.append(im)
-
-                    if not self.tracker.activated and not self.network.activated:  # segmentation
-
-                        self.network.setInputImage(
-                            self.buffer_cam[len(self.buffer_cam) - 1])  # segment last frame in buffer
-                        self.network.toggleNetwork()  # network on
-                        # segmentada
-                        cv2.imwrite(str(self.frame_counter) + '.jpg', im_segmented)  # BGR
-
-                        # tracking configuration
-                        detection = self.network.getOutputDetection()
-                        label = self.network.getOutputLabel()
-                        color_list = self.network.getColorList()
-                        self.tracker.setInputDetection(detection, True)
-                        self.tracker.setInputLabel(label)
-                        self.tracker.setColorList(color_list)
-                        self.tracker.setBuffer(self.buffer_cam)
-                        self.buffer_cam = []  # new buffer
-                        self.tracker.activated = True  # tracker on
-
-                    elif self.tracker.activated:  # tracking output
-                        im_detection = self.tracker.getOutputImage()
-                        self.tracker.checkProgress()
-                        if im_detection is not None:
-                            cv2.imwrite(str(self.frame_counter) + '.jpg', im_detection)  # BGR
-
-            except AttributeError:
-                pass
+        else:
+            self.frame_counter = 0

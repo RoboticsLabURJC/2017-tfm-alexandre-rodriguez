@@ -103,8 +103,6 @@ class DetectionNetwork():
                 (boxes, scores, predictions, _, masks) = self.sess.run(
                     [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections, self.detection_masks],
                     feed_dict={self.image_tensor: image_np_expanded})
-                print('net masks')
-                print(masks)
             else:
                 (boxes, scores, predictions, _) = self.sess.run(
                     [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
@@ -126,7 +124,7 @@ class DetectionNetwork():
             for pred in predictions:
                 self.label.append(self.classes[pred])
 
-            if self.net_has_masks:
+            if self.net_has_masks: #TODO: draw masks of mask nets, use tf obj det tutorial
                 #from Net.utils import visualization_utils
                 #print('draw mask')
                 #visualization_utils.draw_mask_on_image_array(self.input_image, masks)
@@ -135,7 +133,7 @@ class DetectionNetwork():
             else:
                 detected_image = self.renderModifiedImage()
             zeros = False
-            print('Image segmented!')
+            print('Detection done!')
 
         else:
             detected_image = np.array(np.zeros((480, 320), dtype=np.int32))
@@ -143,8 +141,7 @@ class DetectionNetwork():
 
         self.output_image = [detected_image, zeros]
 
-
-    def renderModifiedImage(self): # from utils visualize of Tensorflow folder
+    def renderModifiedImage(self):  # from utils visualize of Tensorflow folder
         image_np = np.copy(self.input_image)
 
         detection_boxes = self.detection

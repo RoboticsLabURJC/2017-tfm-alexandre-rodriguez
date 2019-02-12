@@ -50,7 +50,7 @@ class Tracker:
         self.last_fps_buffer.pop(0)
         self.last_fps_buffer.append(fps_rate)
         avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
-        print('FPS avg: ' + str(avg_fps))
+        #print('FPS avg: ' + str(avg_fps))
         return avg_fps
 
     def trackerSpeed(self, avg_fps):
