@@ -8,10 +8,15 @@
 #     master/gui/gui.py
 #
 
-from PyQt5 import QtGui
-from PyQt5 import QtCore
-from PyQt5 import QtWidgets
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtWidgets import QPushButton
 import numpy as np
+import sys
+
+from Net.threadnetwork import ThreadNetwork as t_net
+from Camera.threadcamera import ThreadCamera as t_cam
+from Tracker.threadtracker import ThreadTracker as t_tracker
+from GUI.threadgui import ThreadGUI as t_gui
 
 
 class GUI(QtWidgets.QWidget):
@@ -20,6 +25,8 @@ class GUI(QtWidgets.QWidget):
     def __init__(self, parent=None):
         ''' GUI class creates the GUI that we're going to use to
         preview the live video as well as the results of the application. '''
+
+        self.app = QtWidgets.QApplication([])
 
         QtWidgets.QWidget.__init__(self, parent)
         self.setWindowTitle("Object Tracker")

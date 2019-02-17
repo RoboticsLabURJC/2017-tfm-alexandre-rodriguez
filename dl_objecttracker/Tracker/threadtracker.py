@@ -17,7 +17,7 @@ t_cycle = 200  # ms
 class ThreadTracker(threading.Thread):
 
     def __init__(self, tracker):
-
+        ''' Threading class for Tracker. '''
         self.tracker = tracker
         threading.Thread.__init__(self)
 

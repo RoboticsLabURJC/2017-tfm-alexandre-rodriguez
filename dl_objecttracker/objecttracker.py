@@ -20,8 +20,6 @@ import sys
 import signal
 import yaml
 
-from PyQt5 import QtWidgets
-
 from Camera.threadcamera import ThreadCamera
 from GUI.gui import GUI
 from GUI.threadgui import ThreadGUI
@@ -107,14 +105,15 @@ if __name__ == '__main__':
     network = DetectionNetwork(net_prop)
     # Threading Network
     t_network = ThreadNetwork(network)
+    t_network.setDaemon(True)  # setting daemon thread to exit
     t_network.start()
 
     tracker = Tracker()
     # Threading Tracker
     t_tracker = ThreadTracker(tracker)
+    t_tracker.setDaemon(True)
     t_tracker.start()
 
-    app = QtWidgets.QApplication(sys.argv)
     window = GUI()
     cam.setGUI(window)
     cam.setNetwork(network, t_network)
@@ -122,6 +121,7 @@ if __name__ == '__main__':
 
     # Threading camera
     t_cam = ThreadCamera(cam)
+    t_cam.setDaemon(True)
     t_cam.start()
     window.setNetwork(network, t_network)
     window.setTracker(tracker)
@@ -130,6 +130,7 @@ if __name__ == '__main__':
         window.show()
         # Threading GUI
         t_gui = ThreadGUI(window)
+        t_gui.setDaemon(True)
         t_gui.start()
 
-    sys.exit(app.exec_())
+    sys.exit(window.app.exec_())

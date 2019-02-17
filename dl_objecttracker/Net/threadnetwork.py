@@ -1,8 +1,12 @@
 #
-# Created on Jan 26, 2018
+# Created on Jan, 2019
 #
-# @author: naxvm
+# @author: alexandre2r
 #
+#  Based on @naxvm code:
+# https://github.com/JdeRobot/dl-objectdetector
+#
+
 
 import time
 import threading
@@ -11,18 +15,14 @@ from datetime import datetime
 
 class ThreadNetwork(threading.Thread):
 
-
     def __init__(self, network):
         ''' Threading class for Camera. '''
 
         self.t_cycle = 150  # ms
-
         self.network = network
-
         self.framerate = 0
 
         threading.Thread.__init__(self)
-
 
     def run(self):
         ''' Updates the thread. '''
