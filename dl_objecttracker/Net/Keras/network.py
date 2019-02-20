@@ -4,13 +4,13 @@ from keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import h5py
+import cv2
 
-from keras_loss_function.keras_ssd_loss import SSDLoss
-from keras_layers.keras_layer_AnchorBoxes import AnchorBoxes
-from keras_layers.keras_layer_DecodeDetections import DecodeDetections
-from keras_layers.keras_layer_L2Normalization import L2Normalization
+from Net.Keras.keras_loss_function.keras_ssd_loss import SSDLoss
+from Net.Keras.keras_layers.keras_layer_AnchorBoxes import AnchorBoxes
+from Net.Keras.keras_layers.keras_layer_DecodeDetections import DecodeDetections
+from Net.Keras.keras_layers.keras_layer_L2Normalization import L2Normalization
 from Net.utils import label_map_util, create_model_from_weights
-
 
 
 LABELS_DICT = {'voc': 'Net/labels/pascal_label_map.pbtxt',
@@ -20,8 +20,7 @@ LABELS_DICT = {'voc': 'Net/labels/pascal_label_map.pbtxt',
                'pet': 'Net/labels/pet_label_map.pbtxt'}
 
 
-
-class DetectionNetwork():
+class DetectionNetwork:
     def __init__(self, net_model):
 
         # attributes from dl-objecttracker architecture
@@ -32,12 +31,19 @@ class DetectionNetwork():
         self.label = None
         self.colors = None
         self.frame = None
-        ###############################################
+        # new necessary attributes from dl-objectdetector network architecture
+        self.original_height = None
+        self.original_width = None
+        self.font = cv2.FONT_HERSHEY_SIMPLEX
+        self.scale = 0.7
+        COLORS = label_map_util.COLORS
 
         self.framework = "Keras"
+        self.net_has_masks = False
+
         # Parse the dataset to get which labels to yield
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
-        label_map = label_map_util.load_labelmap(labels_file) # loads the labels map.
+        label_map = label_map_util.load_labelmap(labels_file)  # loads the labels map.
         categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=100000)
         category_index = label_map_util.create_category_index(categories)
         self.classes = {}
@@ -45,10 +51,16 @@ class DetectionNetwork():
         for cat in category_index:
             self.classes[cat] = str(category_index[cat]['name'])
 
+        # We create the color dictionary for the bounding boxes.
+        self.colors = {}
+        idx = 0
+        for _class in self.classes.values():
+            self.colors[_class] = COLORS[idx]
+            idx = + 1
+
         MODEL_FILE = 'Net/Keras/' + net_model['Model']
 
         file = h5py.File(MODEL_FILE, 'r')
-
 
         ssd_loss = SSDLoss(neg_pos_ratio=3, n_neg_min=0, alpha=1.0)
 
@@ -65,18 +77,18 @@ class DetectionNetwork():
                 SystemExit(e)
         else:
             print("Weights file detected. Creating a model and loading the weights into it...")
-            print "Model file: ", MODEL_FILE
+            print("Model file: ", MODEL_FILE)
             self.model = create_model_from_weights.create_model(MODEL_FILE,
                                                                 ssd_loss,
                                                                 len(self.classes))
-
-
 
         # the Keras network works on 300x300 images. Reference sizes:
         input_size = self.model.input.shape.as_list()
         self.img_height = input_size[1]
         self.img_width = input_size[2]
-
+        # Factors to rescale the output bounding boxes
+        self.height_factor = np.true_divide(320, self.img_height)
+        self.width_factor = np.true_divide(480, self.img_width)
 
         # Output preallocation
         self.predictions = np.asarray([])
@@ -99,40 +111,88 @@ class DetectionNetwork():
     #     self.height_factor = np.true_divide(self.original_height, self.img_height)
     #     self.width_factor = np.true_divide(self.original_width, self.img_width)
 
-
     def predict(self):
-        input_image = self.cam.getImage()
-        # preprocessing
-        as_image = Image.fromarray(input_image)
-        resized = as_image.resize((self.img_width,self.img_height), Image.NEAREST)
-        np_resized = image.img_to_array(resized)
+        input_image = self.input_image
+        if input_image is not None:
+            # preprocessing
+            as_image = Image.fromarray(input_image)
+            resized = as_image.resize((self.img_width,self.img_height), Image.NEAREST)
+            np_resized = image.img_to_array(resized)
 
-        input_col = []
-        input_col.append(np_resized)
-        network_input = np.array(input_col)
-        # Prediction
-        y_pred = self.model.predict(network_input)
+            input_col = []
+            input_col.append(np_resized)
+            network_input = np.array(input_col)
+            # Prediction
+            y_pred = self.model.predict(network_input)
 
-        self.predictions = []
-        self.scores = []
-        self.boxes = []
-        confidence_threshold = 0.5
-        # which predictions are above the confidence threshold?
-        y_pred_thresh = [y_pred[k][y_pred[k,:,1] > confidence_threshold] for k in range(y_pred.shape[0])]
-        # iterate over them
-        for box in y_pred_thresh[0]:
-            self.predictions.append(self.classes[int(box[0])])
-            self.scores.append(box[1])
-            xmin = int(box[2] * self.width_factor)
-            ymin = int(box[3] * self.height_factor)
-            xmax = int(box[4] * self.width_factor)
-            ymax = int(box[5] * self.height_factor)
-            self.boxes.append([xmin, ymin, xmax, ymax])
+            self.label = []
+            self.scores = []
+            boxes = []
+            confidence_threshold = 0.5
+            # which predictions are above the confidence threshold?
+            y_pred_thresh = [y_pred[k][y_pred[k,:,1] > confidence_threshold] for k in range(y_pred.shape[0])]
+            # iterate over them
+            for box in y_pred_thresh[0]:
+                self.label.append(self.classes[int(box[0])])
+                self.scores.append(box[1])
+                xmin = int(box[2] * self.width_factor)
+                ymin = int(box[3] * self.height_factor)
+                xmax = int(box[4] * self.width_factor)
+                ymax = int(box[5] * self.height_factor)
+                boxes.append([xmin, ymax, xmax, ymin])
+            self.detection = boxes
+            if self.net_has_masks: #TODO: draw masks of mask nets, use tf obj det tutorial
+                #from Net.utils import visualization_utils
+                #print('draw mask')
+                #visualization_utils.draw_mask_on_image_array(self.input_image, masks)
+                #self.display_instances(self.input_image, self.detection, masks, self.label, self.scores)
+                detected_image = self.renderModifiedImage()
+            else:
+                detected_image = self.renderModifiedImage()
+            zeros = False
+            print('Detection done!')
+
+        else:
+            detected_image = np.array(np.zeros((480, 320), dtype=np.int32))
+            zeros = True
+
+        self.output_image = [detected_image, zeros]
+
+    def renderModifiedImage(self):  # from utils visualize of Tensorflow folder
+        image_np = np.copy(self.input_image)
+
+        detection_boxes = self.detection
+        detection_classes = self.label
+        detection_scores = self.scores
+
+        for index in range(len(detection_classes)):
+            _class = detection_classes[index]
+            score = detection_scores[index]
+            rect = detection_boxes[index]
+            xmin = rect[0]
+            ymin = rect[1]
+            xmax = rect[2]
+            ymax = rect[3]
+            cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
+
+            label = "{0} ({1} %)".format(_class, int(score * 100))
+            [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
+
+            points = np.array([[[xmin, ymin + base],
+                                [xmin, ymin - size[1]],
+                                [xmin + size[0], ymin - size[1]],
+                                [xmin + size[0], ymin + base]]], dtype=np.int32)
+            cv2.fillPoly(image_np, points, (0, 0, 0))
+            cv2.putText(image_np, label, (xmin, ymin), self.font, self.scale, (255, 255, 255), 2)
+
+        return image_np
 
     def setInputImage(self, im, frame_number):
         ''' Sets the input image of the network. '''
         self.input_image = im
         self.frame = frame_number
+        self.original_height = im.shape[0]
+        self.original_width = im.shape[1]
 
     def getOutputImage(self):
         ''' Returns the image with the segmented objects on it. '''

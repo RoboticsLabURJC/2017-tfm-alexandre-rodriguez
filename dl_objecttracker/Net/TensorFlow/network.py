@@ -11,7 +11,7 @@ LABELS_DICT = {'voc': 'Net/labels/pascal_label_map.pbtxt',
                'pet': 'Net/labels/pet_label_map.pbtxt'}
 
 
-class DetectionNetwork():
+class DetectionNetwork:
     def __init__(self, net_model):
 
         # attributes from dl-objecttracker network architecture
@@ -33,7 +33,7 @@ class DetectionNetwork():
         self.net_has_masks = False
 
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
-        label_map = label_map_util.load_labelmap(labels_file) # loads the labels map.
+        label_map = label_map_util.load_labelmap(labels_file)  # loads the labels map.
         categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes= 999999)
         category_index = label_map_util.create_category_index(categories)
         self.classes = {}
@@ -42,10 +42,9 @@ class DetectionNetwork():
             self.classes[cat] = str(category_index[cat]['name'])
 
         # We create the color dictionary for the bounding boxes.
-        self.net_classes = self.classes
         self.colors = {}
         idx = 0
-        for _class in self.net_classes.values():
+        for _class in self.classes.values():
             self.colors[_class] = COLORS[idx]
             idx = + 1
 
@@ -113,10 +112,10 @@ class DetectionNetwork():
             boxes = boxes[conf]
             # aux variable for avoiding race condition while int casting
             tmp_boxes = np.zeros([len(boxes), 4]).astype(int)
-            tmp_boxes[:, [0]] = boxes[:, [1]] * self.original_width
-            tmp_boxes[:, [2]] = boxes[:, [3]] * self.original_width
-            tmp_boxes[:, [3]] = boxes[:, [2]] * self.original_height
-            tmp_boxes[:, [1]] = boxes[:, [0]] * self.original_height
+            tmp_boxes[:, [0]] = boxes[:, [1]] * self.original_width  #xmin
+            tmp_boxes[:, [2]] = boxes[:, [3]] * self.original_width  #xmax
+            tmp_boxes[:, [3]] = boxes[:, [2]] * self.original_height  #ymin
+            tmp_boxes[:, [1]] = boxes[:, [0]] * self.original_height  #ymax
             self.detection = tmp_boxes
             self.scores = scores[conf]
             predictions = predictions[conf].astype(int)
@@ -132,6 +131,8 @@ class DetectionNetwork():
                 detected_image = self.renderModifiedImage()
             else:
                 detected_image = self.renderModifiedImage()
+                # cv2.imshow('detected', detected_image)
+                # cv2.waitKey(1)
             zeros = False
             print('Detection done!')
 
