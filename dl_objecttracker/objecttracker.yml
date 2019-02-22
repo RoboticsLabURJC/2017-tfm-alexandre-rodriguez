@@ -15,8 +15,8 @@ ObjectTracker:
     Name: cameraA
 
   Network:
-    Framework: Tensorflow  # Currently supported: "Keras" or "TensorFlow"
-    #Model: VGG_VOC0712_SSD_300x300_iter_120000_full.h5
-    Model: frozen_inference_graph.pb
-    Dataset: COCO # available: VOC, COCO, KITTI, OID, PET
+    Framework: Keras  # Currently supported: "Keras" or "TensorFlow"
+    Model: VGG_VOC0712_SSD_300x300_iter_120000.h5
+    #Model: frozen_inference_graph.pb
+    Dataset: VOC # available: VOC, COCO, KITTI, OID, PET
   NodeName: dl-objecttracker

@@ -114,6 +114,7 @@ class DetectionNetwork:
     def predict(self):
         input_image = self.input_image
         if input_image is not None:
+            self.activated = False
             # preprocessing
             as_image = Image.fromarray(input_image)
             resized = as_image.resize((self.img_width,self.img_height), Image.NEAREST)
@@ -139,7 +140,7 @@ class DetectionNetwork:
                 ymin = int(box[3] * self.height_factor)
                 xmax = int(box[4] * self.width_factor)
                 ymax = int(box[5] * self.height_factor)
-                boxes.append([xmin, ymax, xmax, ymin])
+                boxes.append([ymin, xmin, ymax, xmax])
             self.detection = boxes
             if self.net_has_masks: #TODO: draw masks of mask nets, use tf obj det tutorial
                 #from Net.utils import visualization_utils
@@ -169,10 +170,10 @@ class DetectionNetwork:
             _class = detection_classes[index]
             score = detection_scores[index]
             rect = detection_boxes[index]
-            xmin = rect[0]
-            ymin = rect[1]
-            xmax = rect[2]
-            ymax = rect[3]
+            xmin = rect[1]
+            ymin = rect[2]
+            xmax = rect[3]
+            ymax = rect[0]
             cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
