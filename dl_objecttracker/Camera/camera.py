@@ -133,9 +133,9 @@ class Camera:
         if self.cam:
             self.im = self.getImage()
 
-        if self.im is not None:
+        if self.im is not None or len(self.buffer) > 0:
 
-            if self.gui_cfg == 'on':  # control GUI from camera thread
+            if self.gui_cfg == 'on' and self.im is not None:  # control GUI from camera thread
                 im = QtGui.QImage(self.im, self.im.shape[1], self.im.shape[0],
                                   QtGui.QImage.Format_RGB888)
                 im_scaled = im.scaled(self.gui.im_label.size())
@@ -156,6 +156,8 @@ class Camera:
 
                     if processed_frame == self.frame_to_process:
                         self.im_segmented = self.network.getOutputImage()[0]
+                    print('Tracker: ' +str(self.tracker.activated))
+                    print('Net: ' +str(self.network.activated))
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
 
@@ -221,5 +223,6 @@ class Camera:
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
-        else:
+        elif self.source == 'local_video':
+
             self.frame_counter = 0

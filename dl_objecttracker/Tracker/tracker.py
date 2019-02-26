@@ -67,6 +67,23 @@ class Tracker:
             self.counter_fast += 1
             self.tracker_fast = True
 
+    def configureFirstTrack(self, detection):
+        ''' Configures the tracker with the detections from the net. '''
+        xmin = detection[0]
+        ymin = detection[1]
+        xmax = detection[2] - detection[0]
+        ymax = detection[3] - detection[1]
+        if detection[2] - detection[0] > self.image.shape[1]:
+            xmax = self.image.shape[1]
+        if detection[3] - detection[1] > self.image.shape[0]:
+            ymax = self.image.shape[0]
+        if detection[0] < 0:
+            xmin = 0
+        if detection[0] < 0:
+            ymin = 0
+        self.tracker.add(cv2.TrackerKCF_create(), self.image, (
+            xmin, ymin, xmax, ymax))
+
     def track(self):
         ''' The tracking function. '''
 
@@ -90,10 +107,8 @@ class Tracker:
 
             if self.activated:  # avoid to continue the loop if not activated
                 for i in range(len(detection)):
-                    if self.first_image_to_track:  # create multitracker only in the first frame of the buffer, same detections
-                        self.tracker.add(cv2.TrackerTLD_create(), self.image, (
-                            detection[i][0], detection[i][1], detection[i][2] - detection[i][0],
-                            detection[i][3] - detection[i][1]))
+                    if self.first_image_to_track:  # create multitracker only in the first frame of the buffer
+                        self.configureFirstTrack(detection[i])
                 self.first_image_to_track = False
                 self.new_detection = False
                 _, boxes = self.tracker.update(self.image)
