@@ -81,7 +81,7 @@ class Tracker:
             xmin = 0
         if detection[0] < 0:
             ymin = 0
-        self.tracker.add(cv2.TrackerKCF_create(), self.image, (
+        self.tracker.add(cv2.TrackerTLD_create(), self.image, (
             xmin, ymin, xmax, ymax))
 
     def track(self):
@@ -183,7 +183,7 @@ class Tracker:
             self.counter_slow = 0
             self.counter_fast = 0
             self.new_detection = False
-            print('Tracker OFF')
+            print('Tracking done!')
 
     def toggleTracker(self):
         ''' Toggles the tracker (on/off). '''

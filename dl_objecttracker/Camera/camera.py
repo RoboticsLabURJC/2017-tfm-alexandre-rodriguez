@@ -156,8 +156,6 @@ class Camera:
 
                     if processed_frame == self.frame_to_process:
                         self.im_segmented = self.network.getOutputImage()[0]
-                    print('Tracker: ' +str(self.tracker.activated))
-                    print('Net: ' +str(self.network.activated))
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
 
