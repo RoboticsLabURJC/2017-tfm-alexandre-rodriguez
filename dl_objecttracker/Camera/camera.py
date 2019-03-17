@@ -32,6 +32,7 @@ class Camera:
         self.im_segmented = None
         self.frame_counter = 0
         self.frame_to_process = None
+        self.network_framework = None
 
         # image source: camera stream (ICE/ROS)
         if hasattr(cam, 'hasproxy'):
@@ -86,16 +87,16 @@ class Camera:
             if frame is not None:
                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 im = self.resizeImage(im)
-                im = np.reshape(im, (540, 404, 3))
+                im = np.reshape(im, (416, 416, 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (340, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255),
+                cv2.putText(im, str(self.frame_counter), (370, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
                             thickness=2)  # numerate frames to debug, REMOVE in final version
         return im
 
     def resizeImage(self, im):
         ''' Resizes the image. '''
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
-        im_resized = cv2.resize(im_resized, (404, 540), cv2.INTER_NEAREST)
+        im_resized = cv2.resize(im_resized, (416, 416), cv2.INTER_NEAREST)
         return im_resized
 
     def setGUI(self, gui):
@@ -106,10 +107,12 @@ class Camera:
         ''' Declares the Network object and its corresponding control thread. '''
         self.network = network
         self.t_network = t_network
+        self.network_framework = network.framework
 
     def setTracker(self, tracker):
         ''' Declares the Tracker object. '''
         self.tracker = tracker
+        self.tracker.network_framework = self.network_framework  # indicates the neural network type to the tracker
 
     def toggleNetworkAndTracker(self):
         ''' Network and Tracker off. '''
