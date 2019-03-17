@@ -100,17 +100,6 @@ class DetectionNetwork:
 
         print("Network ready!")
 
-
-    # def setCamera(self, cam):
-    #     self.cam = cam
-    #
-    #     self.original_height = cam.im_height
-    #     self.original_width = cam.im_width
-    #
-    #     # Factors to rescale the output bounding boxes
-    #     self.height_factor = np.true_divide(self.original_height, self.img_height)
-    #     self.width_factor = np.true_divide(self.original_width, self.img_width)
-
     def predict(self):
         input_image = self.input_image
         if input_image is not None:
@@ -171,10 +160,10 @@ class DetectionNetwork:
             score = detection_scores[index]
             rect = detection_boxes[index]
             xmin = rect[1]
-            ymin = rect[2]
+            ymin = rect[0]
             xmax = rect[3]
-            ymax = rect[0]
-            cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
+            ymax = rect[2]
+            cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), self.colors[_class], 3)
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)

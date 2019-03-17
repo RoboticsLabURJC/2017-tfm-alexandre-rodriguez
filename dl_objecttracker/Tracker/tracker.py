@@ -1,6 +1,6 @@
 import cv2
 import time
-
+import dlib
 
 class Tracker:
     def __init__(self):
@@ -16,7 +16,8 @@ class Tracker:
         self.buffer_in = []
         self.buffer_out = []
         self.image_counter = 0
-        self.last_fps_buffer = [0 for _ in range(5)]
+        self.last_fps_buffer = [0 for _ in range(3)]
+        self.avg_fps = 0
         self.tracker_slow = False
         self.tracker_fast = False
         self.counter_slow = 0
@@ -24,15 +25,18 @@ class Tracker:
         self.len_buffer_in = 0
         self.first_image_to_track = True
         self.image = None
+        self.network_framework = None
+        self.trackers_dlib = [] #ToDo: rename this vars
+        self.labels_dlib = []
 
     def imageToTrack(self):
         ''' Assigns a new image to track depending on certain conditions. '''
         if self.tracker_slow:
-            if len(self.buffer_in) > 5:
+            if len(self.buffer_in) > 3:
                 self.buffer_in.pop(0)
                 self.buffer_in.pop(0)
-                self.buffer_in.pop(0)
-                self.buffer_in.pop(0)
+                # self.buffer_in.pop(0)
+                # self.buffer_in.pop(0)
                 self.image = self.buffer_in.pop(0)  # jump frames
             elif len(self.buffer_in) > 0:
                 self.image = self.buffer_in.pop(0)
@@ -49,40 +53,59 @@ class Tracker:
         fps_rate = 1.0 / (time.time() - start_time)
         self.last_fps_buffer.pop(0)
         self.last_fps_buffer.append(fps_rate)
-        avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
-        #print('FPS avg: ' + str(avg_fps))
-        return avg_fps
+        self.avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
+        print('FPS avg: ' + str(self.avg_fps))
+        return self.avg_fps
 
-    def trackerSpeed(self, avg_fps):
+    def trackerSpeedMode(self, avg_fps):
         ''' Obtains the tracker speed. '''
-        if not (0 in self.last_fps_buffer) and avg_fps < 2.5:  # tracker slow
+        if not (0 in self.last_fps_buffer) and avg_fps < 10:  # tracker slow
             self.counter_slow += 1
-            if self.counter_slow == 5:
+            if self.counter_slow == 3:
                 self.counter_slow = 0
                 self.tracker_slow = True
-        elif not (0 in self.last_fps_buffer) and 2.5 < avg_fps < 35:  # tracker normal
+        elif not (0 in self.last_fps_buffer) and 10 < avg_fps < 25:  # tracker normal
             self.tracker_slow = False
             self.tracker_fast = False
-        elif avg_fps > 35 and self.counter_fast <= 2:  # tracker fast
+        elif avg_fps > 25 and self.counter_fast < 1:  # tracker fast
             self.counter_fast += 1
             self.tracker_fast = True
 
     def configureFirstTrack(self, detection):
         ''' Configures the tracker with the detections from the net. '''
-        xmin = detection[0]
-        ymin = detection[1]
-        xmax = detection[2] - detection[0]
-        ymax = detection[3] - detection[1]
-        if detection[2] - detection[0] > self.image.shape[1]:
-            xmax = self.image.shape[1]
-        if detection[3] - detection[1] > self.image.shape[0]:
-            ymax = self.image.shape[0]
-        if detection[0] < 0:
-            xmin = 0
-        if detection[0] < 0:
-            ymin = 0
-        self.tracker.add(cv2.TrackerTLD_create(), self.image, (
-            xmin, ymin, xmax, ymax))
+
+        #dlib
+        if self.network_framework == "Keras":
+            xmin = detection[1]
+            ymin = detection[0]
+            xmax = detection[3]
+            ymax = detection[2]
+        elif self.network_framework == "TensorFlow":
+            xmin = detection[0]
+            ymin = detection[1]
+            xmax = detection[2]
+            ymax = detection[3]
+
+        t = dlib.correlation_tracker()
+        rect = dlib.rectangle(xmin, ymin, xmax, ymax)
+        if not rect.is_empty():
+            t.start_track(self.image, rect)
+            self.trackers_dlib.append(t)
+
+        #opencv
+        # if self.network_framework == "Keras":
+        #     xmin = detection[1]
+        #     ymin = detection[0]
+        #     xmax = detection[3] - xmin
+        #     ymax = detection[2] - ymin
+        # elif self.network_framework == "TensorFlow":
+        #     xmin = detection[0]
+        #     ymin = detection[1]
+        #     xmax = detection[2] - xmin
+        #     ymax = detection[3] - ymin
+        #
+        # self.tracker.add(cv2.TrackerMOSSE_create(), self.image, (
+        #     xmin, ymin, xmax, ymax))
 
     def track(self):
         ''' The tracking function. '''
@@ -92,7 +115,7 @@ class Tracker:
         if detection is not None and self.new_detection:  # new detection from net
 
             self.tracker = cv2.MultiTracker_create()
-            self.last_fps_buffer = [0 for _ in range(5)]
+            self.last_fps_buffer = [0 for _ in range(3)]
             self.first_image_to_track = True
 
         elif detection is None:  # no detection from net
@@ -106,25 +129,53 @@ class Tracker:
             self.imageToTrack()
 
             if self.activated:  # avoid to continue the loop if not activated
+
+                if self.new_detection: #dlib
+                    self.trackers_dlib = []
+                    self.labels_dlib = []
                 for i in range(len(detection)):
                     if self.first_image_to_track:  # create multitracker only in the first frame of the buffer
                         self.configureFirstTrack(detection[i])
+                        self.labels_dlib = self.input_label #dlib
+
                 self.first_image_to_track = False
                 self.new_detection = False
                 _, boxes = self.tracker.update(self.image)
 
-                for i, newbox in enumerate(boxes):
-                    p1 = (int(newbox[0]), int(newbox[3]))
-                    p2 = (int(newbox[2]), int(newbox[1]))
-                    if len(self.input_label) == len(boxes):
-                        cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
-                        cv2.putText(self.image, self.input_label[i], (p1[0], p2[1] + 20), cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.75,
-                                    (0, 0, 0), thickness=2, lineType=2)
+                # for i, newbox in enumerate(boxes):
+                #     p1 = (int(newbox[0]), int(newbox[1]))
+                #     p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
+                #     if len(self.input_label) == len(boxes):
+                #         cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                #         cv2.putText(self.image, self.input_label[i], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                #                     0.45,
+                #                     (0, 0, 0), thickness=2, lineType=2)
+                #         cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                #                     0.45,
+                #                     (255, 0, 0), thickness=1, lineType=1)
+
+                for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)): #dlib
+                    # update the tracker and grab the position of the tracked object
+                    t.update(self.image)
+                    pos = t.get_position()
+
+                    # unpack the position object
+                    p1 = (int(pos.left()), int(pos.top()))
+                    p2 = (int(pos.right()), int(pos.bottom()))
+
+                    # draw the bounding box from the dlib tracker
+                    cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                    cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.45,
+                                (0, 0, 0), thickness=2, lineType=2)
+                    cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.45,
+                                (255, 0, 0), thickness=1, lineType=1)
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)
-                self.trackerSpeed(avg_fps)
+                self.trackerSpeedMode(avg_fps)
 
             else:
                 self.image_counter = 0  # reset when toggling modes (activated=False)
@@ -154,14 +205,14 @@ class Tracker:
             self.image_counter += 1
             return self.buffer_out.pop(0)  # returns last detection and deletes it
         elif self.buffer_out and self.tracker_slow:
-            if len(self.buffer_in) > 5:
-                self.image_counter += 5
+            if len(self.buffer_in) > 3:
+                self.image_counter += 3
                 return self.buffer_out.pop(0)
             else:
                 self.image_counter += 1
                 return self.buffer_out.pop(0)
         elif self.buffer_out and self.tracker_fast:
-            if self.counter_fast == 2:  # slow tracking a little, wait for network result
+            if self.counter_fast == 1:  # slow tracking a little, wait for network result
                 self.counter_fast = 0
                 self.image_counter += 1
                 self.tracker_fast = False
