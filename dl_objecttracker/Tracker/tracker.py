@@ -54,7 +54,7 @@ class Tracker:
         self.last_fps_buffer.pop(0)
         self.last_fps_buffer.append(fps_rate)
         self.avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
-        print('FPS avg: ' + str(self.avg_fps))
+        #print('FPS avg: ' + str(self.avg_fps))
         return self.avg_fps
 
     def trackerSpeedMode(self, avg_fps):
@@ -75,37 +75,37 @@ class Tracker:
         ''' Configures the tracker with the detections from the net. '''
 
         #dlib
-        if self.network_framework == "Keras":
-            xmin = detection[1]
-            ymin = detection[0]
-            xmax = detection[3]
-            ymax = detection[2]
-        elif self.network_framework == "TensorFlow":
-            xmin = detection[0]
-            ymin = detection[1]
-            xmax = detection[2]
-            ymax = detection[3]
-
-        t = dlib.correlation_tracker()
-        rect = dlib.rectangle(xmin, ymin, xmax, ymax)
-        if not rect.is_empty():
-            t.start_track(self.image, rect)
-            self.trackers_dlib.append(t)
-
-        #opencv
         # if self.network_framework == "Keras":
         #     xmin = detection[1]
         #     ymin = detection[0]
-        #     xmax = detection[3] - xmin
-        #     ymax = detection[2] - ymin
+        #     xmax = detection[3]
+        #     ymax = detection[2]
         # elif self.network_framework == "TensorFlow":
         #     xmin = detection[0]
         #     ymin = detection[1]
-        #     xmax = detection[2] - xmin
-        #     ymax = detection[3] - ymin
+        #     xmax = detection[2]
+        #     ymax = detection[3]
         #
-        # self.tracker.add(cv2.TrackerMOSSE_create(), self.image, (
-        #     xmin, ymin, xmax, ymax))
+        # t = dlib.correlation_tracker()
+        # rect = dlib.rectangle(xmin, ymin, xmax, ymax)
+        # if not rect.is_empty():
+        #     t.start_track(self.image, rect)
+        #     self.trackers_dlib.append(t)
+
+        #opencv
+        if self.network_framework == "Keras":
+            xmin = detection[1]
+            ymin = detection[0]
+            xmax = detection[3] - xmin
+            ymax = detection[2] - ymin
+        elif self.network_framework == "TensorFlow":
+            xmin = detection[0]
+            ymin = detection[1]
+            xmax = detection[2] - xmin
+            ymax = detection[3] - ymin
+
+        self.tracker.add(cv2.TrackerMOSSE_create(), self.image, (
+            xmin, ymin, xmax, ymax))
 
     def track(self):
         ''' The tracking function. '''
@@ -130,48 +130,48 @@ class Tracker:
 
             if self.activated:  # avoid to continue the loop if not activated
 
-                if self.new_detection: #dlib
-                    self.trackers_dlib = []
-                    self.labels_dlib = []
+                # if self.new_detection: #dlib
+                #     self.trackers_dlib = []
+                #     self.labels_dlib = []
                 for i in range(len(detection)):
                     if self.first_image_to_track:  # create multitracker only in the first frame of the buffer
                         self.configureFirstTrack(detection[i])
-                        self.labels_dlib = self.input_label #dlib
+                        # self.labels_dlib = self.input_label #dlib
 
                 self.first_image_to_track = False
                 self.new_detection = False
                 _, boxes = self.tracker.update(self.image)
 
-                # for i, newbox in enumerate(boxes):
-                #     p1 = (int(newbox[0]), int(newbox[1]))
-                #     p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-                #     if len(self.input_label) == len(boxes):
-                #         cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
-                #         cv2.putText(self.image, self.input_label[i], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                #                     0.45,
-                #                     (0, 0, 0), thickness=2, lineType=2)
-                #         cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
-                #                     0.45,
-                #                     (255, 0, 0), thickness=1, lineType=1)
+                for i, newbox in enumerate(boxes):
+                    p1 = (int(newbox[0]), int(newbox[1]))
+                    p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
+                    if len(self.input_label) == len(boxes):
+                        cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                        cv2.putText(self.image, self.input_label[i], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                    0.45,
+                                    (0, 0, 0), thickness=2, lineType=2)
+                        cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                                    0.45,
+                                    (255, 0, 0), thickness=1, lineType=1)
 
-                for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)): #dlib
-                    # update the tracker and grab the position of the tracked object
-                    t.update(self.image)
-                    pos = t.get_position()
-
-                    # unpack the position object
-                    p1 = (int(pos.left()), int(pos.top()))
-                    p2 = (int(pos.right()), int(pos.bottom()))
-
-                    # draw the bounding box from the dlib tracker
-                    cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
-                    cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                                0.45,
-                                (0, 0, 0), thickness=2, lineType=2)
-                    cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.45,
-                                (255, 0, 0), thickness=1, lineType=1)
+                # for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)): #dlib
+                #     # update the tracker and grab the position of the tracked object
+                #     t.update(self.image)
+                #     pos = t.get_position()
+                #
+                #     # unpack the position object
+                #     p1 = (int(pos.left()), int(pos.top()))
+                #     p2 = (int(pos.right()), int(pos.bottom()))
+                #
+                #     # draw the bounding box from the dlib tracker
+                #     cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                #     cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                #                 0.45,
+                #                 (0, 0, 0), thickness=2, lineType=2)
+                #     cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20),
+                #                 cv2.FONT_HERSHEY_SIMPLEX,
+                #                 0.45,
+                #                 (255, 0, 0), thickness=1, lineType=1)
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)

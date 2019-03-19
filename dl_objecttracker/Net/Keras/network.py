@@ -143,7 +143,7 @@ class DetectionNetwork:
             print('Detection done!')
 
         else:
-            detected_image = np.array(np.zeros((480, 320), dtype=np.int32))
+            detected_image = np.array(np.zeros((480, 320), dtype=np.int32))  # size of images in gui
             zeros = True
 
         self.output_image = [detected_image, zeros]

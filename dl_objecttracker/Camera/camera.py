@@ -39,7 +39,7 @@ class Camera:
             self.cam = cam
             self.source = 'stream_camera'
             self.im = self.getImage()
-            self.im_height = self.im.height
+            self.im_height = self.im.height  #ToDo: change to shape[0] and shape[1] when using ROS comm
             self.im_width = self.im.width
 
         # image source: local camera (OpenCV)
@@ -148,7 +148,10 @@ class Camera:
 
                 try:
 
-                    self.buffer.append(self.im)
+                    if self.source == 'local_video' and self.im is not None:
+                        self.buffer.append(self.im)  # allows processing last frames in buffer
+                    elif self.source == 'local_camera' or self.source == 'stream_camera':
+                        self.buffer.append(self.im)
 
                     if self.gui.count == 0:
                         self.network.setInputImage(self.im, self.frame_counter)  # segment first frame
@@ -161,7 +164,6 @@ class Camera:
                         self.im_segmented = self.network.getOutputImage()[0]
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
-
                         self.network.setInputImage(
                             self.buffer[len(self.buffer) - 1], self.frame_counter)  # segment last frame in buffer
                         self.frame_to_process = self.frame_counter
@@ -182,7 +184,6 @@ class Camera:
                         self.trackerConfiguration()
 
                     elif self.tracker.activated:  # get tracker output
-
                         im_detection = self.tracker.getOutputImage()
                         self.tracker.checkProgress()
                         if im_detection is not None:
@@ -224,6 +225,17 @@ class Camera:
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
-        elif self.source == 'local_video':
-
-            self.frame_counter = 0
+        elif self.source == 'local_video':  # allows processing last frames in buffer
+            im_detection = self.tracker.getOutputImage()  #ToDo: put this in function trackerOut?
+            self.tracker.checkProgress()
+            if im_detection is not None:
+                if self.gui_cfg == 'on':
+                    im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
+                                                im_detection.shape[0],
+                                                QtGui.QImage.Format_RGB888)
+                    im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
+                    self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+                    self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+                else:  # gui off, save image
+                    saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
