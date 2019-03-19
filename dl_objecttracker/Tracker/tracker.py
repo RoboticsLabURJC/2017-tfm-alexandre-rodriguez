@@ -184,7 +184,7 @@ class Tracker:
         ''' Set buffer input of tracker. '''
         self.buffer_in = buf
         self.len_buffer_in = len(self.buffer_in)
-        print('New buffer with length ' + str(len(self.buffer_in)))
+        #print('New buffer with length ' + str(len(self.buffer_in)))
 
     def setInputDetection(self, bbox, state):
         ''' Set bboxes coordinates and state of new detection. '''

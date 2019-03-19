@@ -33,6 +33,8 @@ class Camera:
         self.frame_counter = 0
         self.frame_to_process = None
         self.network_framework = None
+        self.filename_offset = 0
+        self.last_frames_video = False
 
         # image source: camera stream (ICE/ROS)
         if hasattr(cam, 'hasproxy'):
@@ -128,7 +130,8 @@ class Camera:
         self.tracker.setInputLabel(label)
         self.tracker.setColorList(color_list)
         self.tracker.setBuffer(self.buffer)
-        self.buffer = []  # new buffer
+        self.filename_offset = len(self.buffer) + 1
+        self.buffer = []  # new buffer, reset buffer
         self.tracker.activated = True  # tracker on
 
     def update(self):
@@ -178,7 +181,7 @@ class Camera:
                             self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
                             self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
                         else:  # gui off, save image
-                            cv2.imwrite(str(self.frame_counter) + '.jpg', self.im_segmented)  # in BGR
+                            cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', self.im_segmented)  # in BGR
 
                         # tracking configuration
                         self.trackerConfiguration()
@@ -196,7 +199,7 @@ class Camera:
                                 self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                             else:  # gui off, save image
                                 saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
-                                cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+                                cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)  # in RGB
 
                 except AttributeError:
                     pass
@@ -221,11 +224,16 @@ class Camera:
                         self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
                     else:  # gui off, save image
                         saved_image = cv2.cvtColor(self.im_segmented, cv2.COLOR_BGR2RGB)
-                        cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)
+                        cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
         elif self.source == 'local_video':  # allows processing last frames in buffer
+            if not self.last_frames_video:
+                self.frame_counter -= self.filename_offset  # avoids overwriting filename in last frames
+                self.last_frames_video = not self.last_frames_video
+            elif self.last_frames_video:
+                self.frame_counter += 1
             im_detection = self.tracker.getOutputImage()  #ToDo: put this in function trackerOut?
             self.tracker.checkProgress()
             if im_detection is not None:
