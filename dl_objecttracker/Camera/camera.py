@@ -11,7 +11,9 @@
 # https://github.com/JdeRobot/dl-objectdetector
 #
 
+import os
 import numpy as np
+import yaml
 import cv2
 from PyQt5 import QtGui
 
@@ -35,6 +37,9 @@ class Camera:
         self.network_framework = None
         self.filename_offset = 0
         self.last_frames_video = False
+
+        self.frame_tag = []
+        self.log_done = False
 
         # image source: camera stream (ICE/ROS)
         if hasattr(cam, 'hasproxy'):
@@ -93,6 +98,7 @@ class Camera:
                 self.frame_counter += 1
                 cv2.putText(im, str(self.frame_counter), (370, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
                             thickness=2)  # numerate frames to debug, REMOVE in final version
+                self.frame_tag.append(self.frame_counter)
         return im
 
     def resizeImage(self, im):
@@ -130,9 +136,26 @@ class Camera:
         self.tracker.setInputLabel(label)
         self.tracker.setColorList(color_list)
         self.tracker.setBuffer(self.buffer)
+        self.tracker.setFrameTags(self.frame_tag)
         self.filename_offset = len(self.buffer) + 1
         self.buffer = []  # new buffer, reset buffer
+        self.frame_tag = []
         self.tracker.activated = True  # tracker on
+
+    def logTracking(self):
+        if os.path.isfile('log_tracking.yaml') and not self.log_done:
+            with open('log_tracking.yaml', 'w') as yamlfile:
+                print(self.tracker.log_tracking_results)
+                yaml.safe_dump(self.tracker.log_tracking_results, yamlfile, explicit_start=True, default_flow_style=False)
+            print('Log tracker done!')
+
+    def logNetwork(self):
+        if os.path.isfile('log_network.yaml') and not self.log_done:
+            with open('log_network.yaml', 'w') as yamlfile:
+                print(self.network.log_network_results)
+                yaml.safe_dump(self.network.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
+            self.log_done = True  # logging done when both logs finished, change if necessary
+            print('Log network done!')
 
     def update(self):
         ''' Main function: controls the flow of the application. '''
@@ -247,3 +270,6 @@ class Camera:
                 else:  # gui off, save image
                     saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+
+            self.logTracking()
+            # self.logNetwork() # problem saving the results, some data format?

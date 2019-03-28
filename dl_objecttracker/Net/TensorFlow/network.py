@@ -31,6 +31,7 @@ class DetectionNetwork:
 
         self.framework = "TensorFlow"
         self.net_has_masks = False
+        self.log_network_results = []
 
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
         label_map = label_map_util.load_labelmap(labels_file)  # loads the labels map.
@@ -158,6 +159,7 @@ class DetectionNetwork:
             xmax = rect[2]
             ymax = rect[3]
             cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
+            self.log_network_results.append([self.frame, _class, (xmin, ymax), (xmax, ymin)])
 
             label = "{0} ({1} %)".format(_class, int(score*100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)

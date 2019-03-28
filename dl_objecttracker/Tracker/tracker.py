@@ -29,6 +29,10 @@ class Tracker:
         self.trackers_dlib = [] #ToDo: rename this vars
         self.labels_dlib = []
 
+        self.frame_tags = []
+        self.log_data = []
+        self.log_tracking_results = []
+
     def imageToTrack(self):
         ''' Assigns a new image to track depending on certain conditions. '''
         if self.tracker_slow:
@@ -126,7 +130,7 @@ class Tracker:
         if self.image_counter != self.len_buffer_in and detection is not None:
 
             start_time = time.time()
-            self.imageToTrack()
+            self.imageToTrack()  # assigns a new image to be tracked
 
             if self.activated:  # avoid to continue the loop if not activated
 
@@ -150,9 +154,12 @@ class Tracker:
                         cv2.putText(self.image, self.input_label[i], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                     0.45,
                                     (0, 0, 0), thickness=2, lineType=2)
-                        cv2.putText(self.image, 'FPS avg tracking: ' + str(self.avg_fps)[:5], (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                        cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
                                     0.45,
                                     (255, 0, 0), thickness=1, lineType=1)
+                        self.log_tracking_results.append([self.frame_tags[0], self.input_label[i], p1, p2])
+
+                        # print('Tracker in: ' + str(self.frame_tags[0]))
 
                 # for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)): #dlib
                 #     # update the tracker and grab the position of the tracked object
@@ -186,6 +193,9 @@ class Tracker:
         self.len_buffer_in = len(self.buffer_in)
         #print('New buffer with length ' + str(len(self.buffer_in)))
 
+    def setFrameTags(self, tags):
+        self.frame_tags = tags
+
     def setInputDetection(self, bbox, state):
         ''' Set bboxes coordinates and state of new detection. '''
         self.input_detection = bbox
@@ -203,22 +213,41 @@ class Tracker:
         ''' Get tracked image. '''
         if self.input_detection is not None and self.buffer_out and not self.tracker_slow and not self.tracker_fast:
             self.image_counter += 1
+            if len(self.frame_tags) > 0:
+                frame_tag = self.frame_tags.pop(0)
+                # print(frame_tag)
+                self.log_data.append(frame_tag)
             return self.buffer_out.pop(0)  # returns last detection and deletes it
         elif self.buffer_out and self.tracker_slow:
             if len(self.buffer_in) > 3:
                 self.image_counter += 3
+                if len(self.frame_tags) > 0:
+                    frame_tag = self.frame_tags.pop(0)
+                    # print(frame_tag)
+                    self.log_data.append(frame_tag)
                 return self.buffer_out.pop(0)
             else:
                 self.image_counter += 1
+                if len(self.frame_tags) > 0:
+                    frame_tag = self.frame_tags.pop(0)
+                    # print(frame_tag)
+                    self.log_data.append(frame_tag)
                 return self.buffer_out.pop(0)
-        elif self.buffer_out and self.tracker_fast:
-            if self.counter_fast == 1:  # slow tracking a little, wait for network result
-                self.counter_fast = 0
-                self.image_counter += 1
-                self.tracker_fast = False
-                return self.buffer_out.pop(0)
+        elif self.buffer_out and self.tracker_fast and self.counter_fast == 1:  # slow tracking a little, wait for network result
+            self.counter_fast = 0
+            self.image_counter += 1
+            self.tracker_fast = False
+            if len(self.frame_tags) > 0:
+                frame_tag = self.frame_tags.pop(0)
+                # print(frame_tag)
+                self.log_data.append(frame_tag)
+            return self.buffer_out.pop(0)
         elif self.buffer_out and self.input_detection is None:
             self.image_counter += 1
+            if len(self.frame_tags) > 0:
+                frame_tag = self.frame_tags.pop(0)
+                # print(frame_tag)
+                self.log_data.append(frame_tag)
             return self.buffer_out.pop(0)
         else:
             return None
