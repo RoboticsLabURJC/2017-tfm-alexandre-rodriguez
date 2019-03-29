@@ -11,9 +11,7 @@
 # https://github.com/JdeRobot/dl-objectdetector
 #
 
-import os
 import numpy as np
-import yaml
 import cv2
 from PyQt5 import QtGui
 
@@ -31,7 +29,7 @@ class Camera:
         self.im = None
         self.buffer = []
         self.im_once_set = False
-        self.im_segmented = None
+        self.im_detected = None
         self.frame_counter = 0
         self.frame_to_process = None
         self.network_framework = None
@@ -39,15 +37,17 @@ class Camera:
         self.last_frames_video = False
 
         self.frame_tag = []
-        self.log_done = False
 
         # image source: camera stream (ICE/ROS)
         if hasattr(cam, 'hasproxy'):
             self.cam = cam
             self.source = 'stream_camera'
             self.im = self.getImage()
-            self.im_height = self.im.height  #ToDo: change to shape[0] and shape[1] when using ROS comm
-            self.im_width = self.im.width
+            # self.im_height = self.im.height  #ToDo: change to shape[0] and shape[1] when using ROS comm
+            # self.im_width = self.im.width
+            print(self.im.shape)
+            self.im_height = self.im.shape[0]
+            self.im_width = self.im.shape[1]
 
         # image source: local camera (OpenCV)
         elif isinstance(cam, int):
@@ -142,21 +142,6 @@ class Camera:
         self.frame_tag = []
         self.tracker.activated = True  # tracker on
 
-    def logTracking(self):
-        if os.path.isfile('log_tracking.yaml') and not self.log_done:
-            with open('log_tracking.yaml', 'w') as yamlfile:
-                print(self.tracker.log_tracking_results)
-                yaml.safe_dump(self.tracker.log_tracking_results, yamlfile, explicit_start=True, default_flow_style=False)
-            print('Log tracker done!')
-
-    def logNetwork(self):
-        if os.path.isfile('log_network.yaml') and not self.log_done:
-            with open('log_network.yaml', 'w') as yamlfile:
-                print(self.network.log_network_results)
-                yaml.safe_dump(self.network.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
-            self.log_done = True  # logging done when both logs finished, change if necessary
-            print('Log network done!')
-
     def update(self):
         ''' Main function: controls the flow of the application. '''
         if self.cam:
@@ -187,7 +172,7 @@ class Camera:
                     processed_frame = self.network.getProcessedFrame()
 
                     if processed_frame == self.frame_to_process:
-                        self.im_segmented = self.network.getOutputImage()[0]
+                        self.im_detected = self.network.getOutputImage()[0]
 
                     if not self.tracker.activated and not self.network.activated:  # segmentation
                         self.network.setInputImage(
@@ -197,12 +182,12 @@ class Camera:
 
                         if self.gui_cfg == 'on':
                             #  show segmented image
-                            im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
-                                                               self.im_segmented.shape[0],
+                            im_detected_qimage = QtGui.QImage(self.im_detected.data, self.im_detected.shape[1],
+                                                               self.im_detected.shape[0],
                                                                QtGui.QImage.Format_RGB888)
-                            im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_combined_label.size())
-                            self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-                            self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+                            im_detected_scaled = im_detected_qimage.scaled(self.gui.im_combined_label.size())
+                            self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
+                            self.gui.im_detected_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
                         else:  # gui off, save image
                             cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', self.im_segmented)  # in BGR
 
@@ -217,7 +202,7 @@ class Camera:
                                 im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
                                                             im_detection.shape[0],
                                                             QtGui.QImage.Format_RGB888)
-                                im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
+                                im_detection_scaled = im_detection.scaled(self.gui.im_detected_label.size())
                                 self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                                 self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                             else:  # gui off, save image
@@ -236,17 +221,17 @@ class Camera:
                 if not self.network.getOutputImage()[1]:  # get processed frame
                     processed_frame = self.network.getProcessedFrame()
                     if processed_frame == self.frame_to_process:
-                        self.im_segmented = self.network.getOutputImage()[0]
-                if np.any(self.im_segmented.data):  # set segmented frame
+                        self.im_detected = self.network.getOutputImage()[0]
+                if np.any(self.im_detected.data):  # set segmented frame
                     if self.gui_cfg == 'on':
-                        im_segmented_qimage = QtGui.QImage(self.im_segmented.data, self.im_segmented.shape[1],
-                                                           self.im_segmented.shape[0],
+                        im_detected_qimage = QtGui.QImage(self.im_detected.data, self.im_detected.shape[1],
+                                                           self.im_detected.shape[0],
                                                            QtGui.QImage.Format_RGB888)
-                        im_segmented_scaled = im_segmented_qimage.scaled(self.gui.im_segmented_label.size())
-                        self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
-                        self.gui.im_segmented_label.setPixmap(QtGui.QPixmap.fromImage(im_segmented_scaled))
+                        im_detected_scaled = im_detected_qimage.scaled(self.gui.im_detected_label.size())
+                        self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
+                        self.gui.im_detected_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
                     else:  # gui off, save image
-                        saved_image = cv2.cvtColor(self.im_segmented, cv2.COLOR_BGR2RGB)
+                        saved_image = cv2.cvtColor(self.im_detected, cv2.COLOR_BGR2RGB)
                         cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
@@ -264,12 +249,12 @@ class Camera:
                     im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
                                                 im_detection.shape[0],
                                                 QtGui.QImage.Format_RGB888)
-                    im_detection_scaled = im_detection.scaled(self.gui.im_segmented_label.size())
+                    im_detection_scaled = im_detection.scaled(self.gui.im_detected_label.size())
                     self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                     self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
                 else:  # gui off, save image
                     saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
 
-            self.logTracking()
-            # self.logNetwork() # problem saving the results, some data format?
+            self.tracker.logTracking()
+            # self.network.logNetwork() # problem saving the results, some data format?
