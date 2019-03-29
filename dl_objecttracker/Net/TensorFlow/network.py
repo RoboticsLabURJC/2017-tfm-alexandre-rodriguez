@@ -1,3 +1,5 @@
+import os
+import yaml
 import tensorflow as tf
 import numpy as np
 import cv2
@@ -32,6 +34,7 @@ class DetectionNetwork:
         self.framework = "TensorFlow"
         self.net_has_masks = False
         self.log_network_results = []
+        self.log_done = False
 
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
         label_map = label_map_util.load_labelmap(labels_file)  # loads the labels map.
@@ -159,6 +162,7 @@ class DetectionNetwork:
             xmax = rect[2]
             ymax = rect[3]
             cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
+            # log
             self.log_network_results.append([self.frame, _class, (xmin, ymax), (xmax, ymin)])
 
             label = "{0} ({1} %)".format(_class, int(score*100))
@@ -172,6 +176,14 @@ class DetectionNetwork:
             cv2.putText(image_np, label, (xmin, ymin), self.font, self.scale, (255, 255, 255), 2)
 
         return image_np
+
+    def logNetwork(self):
+        if os.path.isfile('log_network.yaml') and not self.log_done:
+            with open('log_network.yaml', 'w') as yamlfile:
+                print(self.log_network_results)
+                yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
+            self.log_done = True
+            print('Log network done!')
 
     def random_colors(self, N, bright=True):
         """

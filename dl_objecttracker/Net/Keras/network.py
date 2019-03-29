@@ -1,3 +1,5 @@
+import os
+import yaml
 from keras import backend as K
 from keras.models import load_model
 from keras.preprocessing import image
@@ -40,6 +42,8 @@ class DetectionNetwork:
 
         self.framework = "Keras"
         self.net_has_masks = False
+        self.log_network_results = []
+        self.log_done = False
 
         # Parse the dataset to get which labels to yield
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
@@ -164,6 +168,8 @@ class DetectionNetwork:
             xmax = rect[3]
             ymax = rect[2]
             cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), self.colors[_class], 3)
+            # log
+            self.log_network_results.append([self.frame, _class, (xmin, ymax), (xmax, ymin)])
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
@@ -176,6 +182,14 @@ class DetectionNetwork:
             cv2.putText(image_np, label, (xmin, ymin), self.font, self.scale, (255, 255, 255), 2)
 
         return image_np
+
+    def logNetwork(self):
+        if os.path.isfile('log_network.yaml') and not self.log_done:
+            with open('log_network.yaml', 'w') as yamlfile:
+                print(self.log_network_results)
+                yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
+            self.log_done = True
+            print('Log network done!')
 
     def setInputImage(self, im, frame_number):
         ''' Sets the input image of the network. '''
