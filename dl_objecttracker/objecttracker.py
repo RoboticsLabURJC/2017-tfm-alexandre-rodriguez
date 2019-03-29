@@ -77,6 +77,19 @@ def selectNetwork(cfg):
         raise SystemExit(('%s not supported! Supported frameworks: Keras, TensorFlow') % (framework))
     return net_prop, DetectionNetwork
 
+def selectTracker(cfg):
+    """
+    @param cfg: configuration
+    @return net_prop: tracker properties
+    @raise SystemExit in case of invalid tracker
+    """
+    tracker_prop = cfg['ObjectTracker']['Tracker']
+    library = tracker_prop['Lib']
+    if library.lower() == 'opencv' or library.lower() == 'dlib':
+        print('Using ' + library.lower() + ' tracking.')
+    else:
+        raise SystemExit(('%s not supported! Supported trackers of: OpenCV, dlib') % (library))
+    return tracker_prop, library.lower()
 
 def readConfig():
     try:
@@ -101,6 +114,7 @@ if __name__ == '__main__':
     cfg = readConfig()
     cam = selectVideoSource(cfg, gui_cfg)
     net_prop, DetectionNetwork = selectNetwork(cfg)
+    tracker_prop, tracker_lib_prop = selectTracker(cfg)
 
     network = DetectionNetwork(net_prop)
     # Threading Network
@@ -108,7 +122,7 @@ if __name__ == '__main__':
     t_network.setDaemon(True)  # setting daemon thread to exit
     t_network.start()
 
-    tracker = Tracker()
+    tracker = Tracker(tracker_prop, tracker_lib_prop)
     # Threading Tracker
     t_tracker = ThreadTracker(tracker)
     t_tracker.setDaemon(True)
