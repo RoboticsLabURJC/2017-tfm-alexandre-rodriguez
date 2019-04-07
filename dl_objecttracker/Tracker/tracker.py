@@ -183,7 +183,8 @@ class Tracker:
                                         0.45,
                                         (255, 0, 0), thickness=1, lineType=1)
                             # log
-                            self.log_tracking_results.append([self.frame_tags[0], self.input_label[i], p1, p2])
+                            if self.frame_tags:
+                                self.log_tracking_results.append([self.frame_tags[0], self.input_label[i], 0, p1, p2])  # simulated confidence of tracking = 0
 
                             # print('Tracker in: ' + str(self.frame_tags[0]))
                 else:
@@ -206,7 +207,8 @@ class Tracker:
                                     0.45,
                                     (255, 0, 0), thickness=1, lineType=1)
                         # log
-                        self.log_tracking_results.append([self.frame_tags[0], l, p1, p2])
+                        if self.frame_tags:
+                            self.log_tracking_results.append([self.frame_tags[0], l, 0, p1, p2])
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)
@@ -291,7 +293,6 @@ class Tracker:
     def logTracking(self):
         if os.path.isfile('log_tracking.yaml') and not self.log_done:
             with open('log_tracking.yaml', 'w') as yamlfile:
-                print(self.log_tracking_results)
                 yaml.safe_dump(self.log_tracking_results, yamlfile, explicit_start=True, default_flow_style=False)
             self.log_done = True
             print('Log tracker done!')
