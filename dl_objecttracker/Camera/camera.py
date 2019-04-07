@@ -94,9 +94,9 @@ class Camera:
             if frame is not None:
                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 im = self.resizeImage(im)
-                im = np.reshape(im, (416, 416, 3))
+                im = np.reshape(im, (512, 512, 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (370, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
+                cv2.putText(im, str(self.frame_counter), (450, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
                             thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
         return im
@@ -104,7 +104,7 @@ class Camera:
     def resizeImage(self, im):
         ''' Resizes the image. '''
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
-        im_resized = cv2.resize(im_resized, (416, 416), cv2.INTER_NEAREST)
+        im_resized = cv2.resize(im_resized, (512, 512), cv2.INTER_NEAREST)
         return im_resized
 
     def setGUI(self, gui):
@@ -257,4 +257,4 @@ class Camera:
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
 
             self.tracker.logTracking()
-            # self.network.logNetwork() # problem saving the results, some data format?
+            # self.network.logNetwork() # problem saving the results in tf net, some data format?
