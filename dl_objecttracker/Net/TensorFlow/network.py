@@ -28,7 +28,7 @@ class DetectionNetwork:
         self.original_height = None
         self.original_width = None
         self.font = cv2.FONT_HERSHEY_SIMPLEX
-        self.scale = 0.7
+        self.scale = 0.5
         COLORS = label_map_util.COLORS
 
         self.framework = "TensorFlow"
@@ -163,7 +163,7 @@ class DetectionNetwork:
             ymax = rect[3]
             cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
             # log
-            self.log_network_results.append([self.frame, _class, (xmin, ymax), (xmax, ymin)])
+            self.log_network_results.append([self.frame, _class, str(score), (xmin, ymax), (xmax, ymin)])
 
             label = "{0} ({1} %)".format(_class, int(score*100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
@@ -180,7 +180,7 @@ class DetectionNetwork:
     def logNetwork(self):
         if os.path.isfile('log_network.yaml') and not self.log_done:
             with open('log_network.yaml', 'w') as yamlfile:
-                print(self.log_network_results)
+                # print(self.log_network_results)
                 yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
             self.log_done = True
             print('Log network done!')
