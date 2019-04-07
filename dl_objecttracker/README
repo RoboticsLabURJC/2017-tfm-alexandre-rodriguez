@@ -10,5 +10,7 @@ Else, you prefer to save the results as .jpg images:
 
 Modify the configuration file (.yml) accordingly.
  - Tensorflow and Keras support (Network->Framework).
- - The source tested by now is a locally saved video (ObjectTracker->Source). Change the video path to your video (Video->Path).
+ - The available sources are: 
+	- a locally saved video (ObjectTracker->Source->Video). Change the video path to your video (Video->Path)
+	- live video from camera using OpenCV (ObjectTracker->Source->Local)
 
