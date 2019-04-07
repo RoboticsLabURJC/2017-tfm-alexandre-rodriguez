@@ -1,0 +1,1 @@
+To obtain the detection files you have to execute in bash the get_detection_files.sh. It will ask you for your password as it needs sudo permissions to delete previous files.
