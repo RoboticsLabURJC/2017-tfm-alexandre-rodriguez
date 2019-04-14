@@ -64,16 +64,16 @@ class GUI(QtWidgets.QWidget):
         self.im_combined_label_txt.show()
 
         # neural network image labels
-        self.im_detected_label = QtWidgets.QLabel(self)
-        self.im_detected_label.resize(480, 320)
-        self.im_detected_label.move(70, 410)
-        self.im_detected_label.setPixmap(QtGui.QPixmap.fromImage(zeros_scaled))
-        self.im_detected_label.show()
-        self.im_detected_label_txt = QtWidgets.QLabel(self)
-        self.im_detected_label_txt.resize(50, 40)
-        self.im_detected_label_txt.move(290, 380)
-        self.im_detected_label_txt.setText('Net')
-        self.im_detected_label_txt.show()
+        self.im_net_label = QtWidgets.QLabel(self)
+        self.im_net_label.resize(480, 320)
+        self.im_net_label.move(70, 410)
+        self.im_net_label.setPixmap(QtGui.QPixmap.fromImage(zeros_scaled))
+        self.im_net_label.show()
+        self.im_net_label_txt = QtWidgets.QLabel(self)
+        self.im_net_label_txt.resize(50, 40)
+        self.im_net_label_txt.move(290, 380)
+        self.im_net_label_txt.setText('Net')
+        self.im_net_label_txt.show()
 
         # tracked image labels
         self.im_tracked_label = QtWidgets.QLabel(self)
