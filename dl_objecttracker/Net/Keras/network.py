@@ -54,7 +54,7 @@ class DetectionNetwork:
         # We build is as a dict because of gaps on the labels definitions
         for cat in category_index:
             self.classes[cat] = str(category_index[cat]['name'])
-        print(self.classes)
+
         # We create the color dictionary for the bounding boxes.
         self.colors = {}
         idx = 0
@@ -186,7 +186,6 @@ class DetectionNetwork:
     def logNetwork(self):
         if os.path.isfile('log_network.yaml') and not self.log_done:
             with open('log_network.yaml', 'w') as yamlfile:
-                # print(self.log_network_results)
                 yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
             self.log_done = True
             print('Log network done!')
