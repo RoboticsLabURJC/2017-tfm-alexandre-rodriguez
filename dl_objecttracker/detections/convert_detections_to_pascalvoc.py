@@ -1,6 +1,8 @@
 import yaml
 from os import path
 
+# detections format required: <class_name> <confidence> <left> <top> <right> <bottom>
+
 
 def get_files(path_file, previous_frame):
     with open(path_file, 'r') as stream:
@@ -11,7 +13,7 @@ def get_files(path_file, previous_frame):
                 with open(str(actual_frame) + '.txt', 'a') as logfile:
                     logfile.write(
                         out[i][1] + " " + str(out[i][2]) + " " + str(out[i][3][0]) + " " + str(out[i][3][1]) + " " + str(out[i][4][0]) + " " + str(out[i][4][
-                            1]) + "\n")  # <class_name> <confidence> <left> <top> <right> <bottom>
+                            1]) + "\n")
             elif actual_frame != previous_frame:
                 with open(str(actual_frame) + '.txt', 'a') as logfile:
                     logfile.write(
