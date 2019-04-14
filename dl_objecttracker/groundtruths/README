@@ -1,0 +1,1 @@
+To obtain the ground truth files you have to execute in bash the get_gt_files.sh. Not stable yet (adding parsing of new datasets).
