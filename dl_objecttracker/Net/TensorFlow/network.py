@@ -135,8 +135,6 @@ class DetectionNetwork:
                 detected_image = self.renderModifiedImage()
             else:
                 detected_image = self.renderModifiedImage()
-                # cv2.imshow('detected', detected_image)
-                # cv2.waitKey(0)
             zeros = False
             print('Detection done!')
 
