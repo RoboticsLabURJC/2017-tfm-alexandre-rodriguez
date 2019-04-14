@@ -29,7 +29,7 @@ class Camera:
         self.im = None
         self.buffer = []
         self.im_once_set = False
-        self.im_detected = None
+        self.im_net = None
         self.frame_counter = 0
         self.frame_to_process = None
         self.network_framework = None
@@ -159,35 +159,35 @@ class Camera:
 
                 try:
 
-                    if self.source == 'local_video' and self.im is not None:
-                        self.buffer.append(self.im)  # allows processing last frames in buffer
-                    elif self.source == 'local_camera' or self.source == 'stream_camera':
-                        self.buffer.append(self.im)
-
                     if self.gui.count == 0:
-                        self.network.setInputImage(self.im, self.frame_counter)  # segment first frame
+                        self.network.setInputImage(self.im, self.frame_counter)  # process first frame
                         self.frame_to_process = self.frame_counter
                         self.gui.count += 1
+                    else:
+                        if self.source == 'local_video' and self.im is not None:
+                            self.buffer.append(self.im)  # allows processing last frames in buffer
+                        elif self.source == 'local_camera' or self.source == 'stream_camera':
+                            self.buffer.append(self.im)
 
                     processed_frame = self.network.getProcessedFrame()
 
-                    if processed_frame == self.frame_to_process:
-                        self.im_detected = self.network.getOutputImage()[0]
+                    if processed_frame == self.frame_to_process and not self.network.getOutputImage()[1]:
+                        self.im_net = self.network.getOutputImage()[0]
 
-                    if not self.tracker.activated and not self.network.activated:  # segmentation
+                    if not self.tracker.activated and not self.network.activated and not self.network.getOutputImage()[1]:  # added check if net output is not zeros
                         self.network.setInputImage(
-                            self.buffer[len(self.buffer) - 1], self.frame_counter)  # segment last frame in buffer
+                            self.buffer[len(self.buffer) - 1], self.frame_counter)  # process last frame in buffer
                         self.frame_to_process = self.frame_counter
                         self.network.toggleNetwork()  # network on
 
                         if self.gui_cfg == 'on':
                             #  show segmented image
-                            im_detected_qimage = QtGui.QImage(self.im_detected.data, self.im_detected.shape[1],
-                                                               self.im_detected.shape[0],
+                            im_net = QtGui.QImage(self.im_net.data, self.im_net.shape[1],
+                                                               self.im_net.shape[0],
                                                                QtGui.QImage.Format_RGB888)
-                            im_detected_scaled = im_detected_qimage.scaled(self.gui.im_combined_label.size())
-                            self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
-                            self.gui.im_detected_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
+                            im_net_scaled = im_net.scaled(self.gui.im_net_label.size())
+                            self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+                            self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
                         else:  # gui off, save image
                             cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', self.im_segmented)  # in BGR
 
@@ -195,18 +195,18 @@ class Camera:
                         self.trackerConfiguration()
 
                     elif self.tracker.activated:  # get tracker output
-                        im_detection = self.tracker.getOutputImage()
+                        im_tracked = self.tracker.getOutputImage()
                         self.tracker.checkProgress()
-                        if im_detection is not None:
+                        if im_tracked is not None:
                             if self.gui_cfg == 'on':
-                                im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
-                                                            im_detection.shape[0],
+                                im_tracked = QtGui.QImage(im_tracked.data, im_tracked.shape[1],
+                                                            im_tracked.shape[0],
                                                             QtGui.QImage.Format_RGB888)
-                                im_detection_scaled = im_detection.scaled(self.gui.im_detected_label.size())
-                                self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
-                                self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+                                im_tracked_scaled = im_tracked.scaled(self.gui.im_tracked_label.size())
+                                self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
+                                self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
                             else:  # gui off, save image
-                                saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
+                                saved_image = cv2.cvtColor(im_tracked, cv2.COLOR_BGR2RGB)
                                 cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)  # in RGB
 
                 except AttributeError:
@@ -221,17 +221,17 @@ class Camera:
                 if not self.network.getOutputImage()[1]:  # get processed frame
                     processed_frame = self.network.getProcessedFrame()
                     if processed_frame == self.frame_to_process:
-                        self.im_detected = self.network.getOutputImage()[0]
-                if np.any(self.im_detected.data):  # set segmented frame
+                        self.im_net = self.network.getOutputImage()[0]
+                if np.any(self.im_net.data):  # set segmented frame
                     if self.gui_cfg == 'on':
-                        im_detected_qimage = QtGui.QImage(self.im_detected.data, self.im_detected.shape[1],
-                                                           self.im_detected.shape[0],
+                        im_net = QtGui.QImage(self.im_net.data, self.im_net.shape[1],
+                                                           self.im_net.shape[0],
                                                            QtGui.QImage.Format_RGB888)
-                        im_detected_scaled = im_detected_qimage.scaled(self.gui.im_detected_label.size())
-                        self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
-                        self.gui.im_detected_label.setPixmap(QtGui.QPixmap.fromImage(im_detected_scaled))
+                        im_net_scaled = im_net.scaled(self.gui.im_net_label.size())
+                        self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+                        self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
                     else:  # gui off, save image
-                        saved_image = cv2.cvtColor(self.im_detected, cv2.COLOR_BGR2RGB)
+                        saved_image = cv2.cvtColor(self.im_net, cv2.COLOR_BGR2RGB)
                         cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
@@ -242,19 +242,31 @@ class Camera:
                 self.last_frames_video = not self.last_frames_video
             elif self.last_frames_video:
                 self.frame_counter += 1
-            im_detection = self.tracker.getOutputImage()  #ToDo: put this in function trackerOut?
+            im_tracked = self.tracker.getOutputImage()
+            im_net = self.network.getOutputImage()[0]
             self.tracker.checkProgress()
-            if im_detection is not None:
+            if im_tracked is not None:  # last tracked from Tracker
                 if self.gui_cfg == 'on':
-                    im_detection = QtGui.QImage(im_detection.data, im_detection.shape[1],
-                                                im_detection.shape[0],
+                    im_tracked = QtGui.QImage(im_tracked.data, im_tracked.shape[1],
+                                                im_tracked.shape[0],
                                                 QtGui.QImage.Format_RGB888)
-                    im_detection_scaled = im_detection.scaled(self.gui.im_detected_label.size())
-                    self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
-                    self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_detection_scaled))
+                    im_tracked_scaled = im_tracked.scaled(self.gui.im_tracked_label.size())
+                    self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
+                    self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
                 else:  # gui off, save image
-                    saved_image = cv2.cvtColor(im_detection, cv2.COLOR_BGR2RGB)
+                    saved_image = cv2.cvtColor(im_tracked, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
-
-            self.tracker.logTracking()
-            # self.network.logNetwork() # problem saving the results in tf net, some data format?
+            if im_net is not None and im_tracked is None:  # last detection from Net
+                if self.gui_cfg == 'on':
+                    im_net = QtGui.QImage(im_net.data, im_net.shape[1],
+                                                im_net.shape[0],
+                                                QtGui.QImage.Format_RGB888)
+                    im_net_scaled = im_net.scaled(self.gui.im_net_label.size())
+                    self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+                    self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+                else:  # gui off, save image
+                    saved_image = cv2.cvtColor(im_net, cv2.COLOR_BGR2RGB)
+                    cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+            if not self.network.activated and not self.tracker.activated:
+                self.tracker.logTracking()
+                self.network.logNetwork()
