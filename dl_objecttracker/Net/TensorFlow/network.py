@@ -100,7 +100,6 @@ class DetectionNetwork:
     def predict(self):
         input_image = self.input_image
         if input_image is not None:
-            self.activated = False
             image_np_expanded = np.expand_dims(input_image, axis=0)
             if self.net_has_masks:
                 (boxes, scores, predictions, _, masks) = self.sess.run(
@@ -135,6 +134,7 @@ class DetectionNetwork:
                 detected_image = self.renderModifiedImage()
             else:
                 detected_image = self.renderModifiedImage()
+            self.activated = False
             zeros = False
             print('Detection done!')
 

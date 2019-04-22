@@ -263,7 +263,7 @@ class Camera:
                                                 QtGui.QImage.Format_RGB888)
                     im_net_scaled = im_net.scaled(self.gui.im_net_label.size())
                     self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
-                    self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+                    self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))  #ToDo: set functions de net/tracker image in GUI
                 else:  # gui off, save image
                     saved_image = cv2.cvtColor(im_net, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB

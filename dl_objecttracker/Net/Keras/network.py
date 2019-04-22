@@ -107,7 +107,6 @@ class DetectionNetwork:
     def predict(self):
         input_image = self.input_image
         if input_image is not None:
-            self.activated = False
             # preprocessing
             as_image = Image.fromarray(input_image)
             resized = as_image.resize((self.img_width,self.img_height), Image.NEAREST)
@@ -143,6 +142,7 @@ class DetectionNetwork:
                 detected_image = self.renderModifiedImage()
             else:
                 detected_image = self.renderModifiedImage()
+            self.activated = False
             zeros = False
             print('Detection done!')
 
