@@ -22,7 +22,6 @@ from cv_bridge import CvBridge
 class ROS_camera:
 
     def __init__(self):
-        # self.image_pub = rospy.Publisher("image_topic_2", Image, queue_size=10)
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.callback)
         self.bridge = CvBridge()
         self.image = None
