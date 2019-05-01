@@ -13,4 +13,12 @@ Modify the configuration file (.yml) accordingly.
  - The available sources are: 
 	- a locally saved video (ObjectTracker->Source->Video). Change the video path to your video (Video->Path)
 	- live video from camera using OpenCV (ObjectTracker->Source->Local)
+	- ROS stream using usb_cam driver (ObjectTracker->Source->Stream)
+
+To use the ROS stream you need to launch the usb_cam node in another terminal:
+
+	$ roslaunch usb_cam.launch
+
+More info about the steps followed to use ROS and more at my wiki
+http://jderobot.org/Arodriguez-tfm
 

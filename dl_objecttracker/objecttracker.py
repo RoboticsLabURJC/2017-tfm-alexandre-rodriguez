@@ -47,13 +47,8 @@ def selectVideoSource(cfg, gui_cfg):
         print('  Chosen source: local video (%s)' % (video_path))
         cam = Camera(video_path, gui_cfg)
     elif source.lower() == 'stream':
-        # comm already prints the source technology (ICE/ROS)
-        import comm
-        import config
-        cfg = config.load(sys.argv[1])
-        jdrc = comm.init(cfg, 'ObjectTracker')
-        proxy = jdrc.getCameraClient('ObjectTracker.Stream')
-        cam = Camera(proxy, gui_cfg)
+        print('  Chosen source: stream using ROS')
+        cam = Camera('stream', gui_cfg)
     else:
         raise SystemExit(('%s not supported! Supported source: Local, Video, Stream') % (source))
 

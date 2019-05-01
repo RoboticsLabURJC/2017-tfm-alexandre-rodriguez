@@ -14,6 +14,28 @@
 import numpy as np
 import cv2
 from PyQt5 import QtGui
+import rospy
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+
+
+class ROS_camera:
+
+    def __init__(self):
+        # self.image_pub = rospy.Publisher("image_topic_2", Image, queue_size=10)
+        self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.callback)
+        self.bridge = CvBridge()
+        self.image = None
+        self.im_height = None
+        self.im_width = None
+
+    def callback(self, data):
+        self.image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        self.im_height = self.image.shape[0]
+        self.im_width = self.image.shape[1]
+
+    def read(self):
+        return self.image
 
 
 class Camera:
@@ -38,16 +60,11 @@ class Camera:
 
         self.frame_tag = []
 
-        # image source: camera stream (ICE/ROS)
-        if hasattr(cam, 'hasproxy'):
-            self.cam = cam
+        # image source: stream ROS
+        if cam == 'stream':
             self.source = 'stream_camera'
-            self.im = self.getImage()
-            # self.im_height = self.im.height  #ToDo: change to shape[0] and shape[1] when using ROS comm
-            # self.im_width = self.im.width
-            print(self.im.shape)
-            self.im_height = self.im.shape[0]
-            self.im_width = self.im.shape[1]
+            rospy.init_node('ROS_camera', anonymous=True)
+            self.cam = ROS_camera()
 
         # image source: local camera (OpenCV)
         elif isinstance(cam, int):
@@ -58,6 +75,8 @@ class Camera:
                 raise SystemExit("Please check your camera id (hint: ls /dev)")
             self.im_width = int(self.cam.get(3))
             self.im_height = int(self.cam.get(4))
+            print('Image size: {0}x{1} px'.format(
+                self.im_width, self.im_height))
 
         # image source: local video (OpenCV)
         elif isinstance(cam, str):
@@ -71,12 +90,11 @@ class Camera:
                 print("%s is not a valid video path." % video_path)
             self.im_width = int(self.cam.get(3))
             self.im_height = int(self.cam.get(4))
+            print('Image size: {0}x{1} px'.format(
+                self.im_width, self.im_height))
 
         else:
             raise SystemExit("Interface camera not connected")
-
-        print('Image size: {0}x{1} px'.format(
-            self.im_width, self.im_height))
 
         if self.gui_cfg == 'off':
             print('GUI not set')
@@ -87,8 +105,18 @@ class Camera:
         im = None
 
         if self.cam and self.source == 'stream_camera':
-            im = self.cam.getImage()
-            im = np.frombuffer(im.data, dtype=np.uint8)
+            frame = self.cam.read()
+            if frame is not None:
+                self.im_height = frame.shape[0]
+                self.im_width = frame.shape[1]
+                im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = self.resizeImage(im)
+                im = np.reshape(im, (512, 512, 3))
+                self.frame_counter += 1
+                cv2.putText(im, str(self.frame_counter), (450, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
+                            thickness=2)  # numerate frames to debug, REMOVE in final version
+                self.frame_tag.append(self.frame_counter)
+
         elif self.cam and (self.source == 'local_camera' or self.source == 'local_video'):
             _, frame = self.cam.read()
             if frame is not None:

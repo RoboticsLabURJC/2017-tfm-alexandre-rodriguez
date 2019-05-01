@@ -1,14 +1,14 @@
 ObjectTracker:
-  Source: Video # Local (local camera), Video (local file), Stream (ROS/ICE)
+  Source: Stream # Local (local camera), Video (local file), Stream (ROS/ICE)
 
   Local:
     DeviceNo: 1 # Device number for the desired webcam
 
   Video:
-    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOTDet/sequences/MOT17-11.mp4"
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/old_videos/tud-campus-sequence.avi"
 
   Stream:
-    Server: ICE # "ROS", "ICE", "Deactivate"
+    Server: ROS # "ROS", "ICE", "Deactivate"
     Proxy: "cameraA:tcp -h localhost -p 9999"
     Format: RGB8
     Topic: "/usb_cam/image_raw"
