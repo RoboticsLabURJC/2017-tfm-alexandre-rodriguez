@@ -42,6 +42,7 @@ class Tracker:
         self.log_data = []
         self.log_tracking_results = []
         self.log_done = False
+        self.image_scale = (None, None)
 
     def imageToTrack(self):
         ''' Assigns a new image to track depending on certain conditions. '''
@@ -184,9 +185,12 @@ class Tracker:
                                         (255, 0, 0), thickness=1, lineType=1)
                             # log
                             if self.frame_tags:
-                                self.log_tracking_results.append([self.frame_tags[0], self.input_label[i], 0, p1, p2])  # simulated confidence of tracking = 0
+                                label_no_spaces = self.input_label[i].replace(" ",
+                                                                 "")  # to allow the use of metrics calculation utility
+                                p1_rescaled = (int(p1[0]*self.image_scale[0]), int(p1[1]*self.image_scale[1]))
+                                p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
+                                self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])  # simulated confidence of tracking = 0
 
-                            # print('Tracker in: ' + str(self.frame_tags[0]))
                 else:
                     for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)):
                         # update the tracker and grab the position of the tracked object
@@ -208,7 +212,10 @@ class Tracker:
                                     (255, 0, 0), thickness=1, lineType=1)
                         # log
                         if self.frame_tags:
-                            self.log_tracking_results.append([self.frame_tags[0], l, 0, p1, p2])
+                            label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
+                            p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
+                            p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
+                            self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)

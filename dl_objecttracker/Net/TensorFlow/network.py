@@ -35,6 +35,7 @@ class DetectionNetwork:
         self.net_has_masks = False
         self.log_network_results = []
         self.log_done = False
+        self.image_scale = (None, None)
 
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
         label_map = label_map_util.load_labelmap(labels_file)  # loads the labels map.
@@ -156,12 +157,17 @@ class DetectionNetwork:
             score = detection_scores[index]
             rect = detection_boxes[index]
             xmin = rect[0]
-            ymin = rect[1]
+            ymin = rect[3]
             xmax = rect[2]
-            ymax = rect[3]
-            cv2.rectangle(image_np, (xmin, ymax), (xmax, ymin), self.colors[_class], 3)
+            ymax = rect[1]
+            cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), self.colors[_class], 3)
             # log
-            self.log_network_results.append([self.frame, _class, str(score), (str(xmin), str(ymax)), (str(xmax), str(ymin))])
+            class_no_spaces = _class.replace(" ", "")  # to allow the use of metrics calculation utility
+            xmin_rescaled = int(xmin * self.image_scale[0])
+            xmax_rescaled = int(xmax * self.image_scale[0])
+            ymin_rescaled = int(ymin * self.image_scale[1])
+            ymax_rescaled = int(ymax * self.image_scale[1])
+            self.log_network_results.append([self.frame - 1, class_no_spaces, str(score), (str(xmin_rescaled), str(ymin_rescaled)), (str(xmax_rescaled), str(ymax_rescaled))])
 
             label = "{0} ({1} %)".format(_class, int(score*100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)

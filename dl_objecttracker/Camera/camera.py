@@ -19,7 +19,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
 
-class ROS_camera:
+class ROSCamera:
 
     def __init__(self):
         self.image_sub = rospy.Subscriber("/usb_cam/image_raw", Image, self.callback)
@@ -63,7 +63,7 @@ class Camera:
         if cam == 'stream':
             self.source = 'stream_camera'
             rospy.init_node('ROS_camera', anonymous=True)
-            self.cam = ROS_camera()
+            self.cam = ROSCamera()
 
         # image source: local camera (OpenCV)
         elif isinstance(cam, int):
@@ -131,7 +131,9 @@ class Camera:
     def resizeImage(self, im):
         ''' Resizes the image. '''
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
-        im_resized = cv2.resize(im_resized, (512, 512), cv2.INTER_NEAREST)
+        self.network.image_scale = (float(self.im_width)/512, float(self.im_height)/512)
+        self.tracker.image_scale = self.network.image_scale
+        im_resized = cv2.resize(im_resized, (512, 512), cv2.INTER_NEAREST)  #ToDo: allow different input sizes
         return im_resized
 
     def setGUI(self, gui):

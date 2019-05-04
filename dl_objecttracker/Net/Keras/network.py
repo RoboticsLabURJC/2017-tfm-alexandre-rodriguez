@@ -169,7 +169,12 @@ class DetectionNetwork:
             ymax = rect[2]
             cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), self.colors[_class], 3)
             # log
-            self.log_network_results.append([self.frame, _class, str(score), (xmin, ymax), (xmax, ymin)])
+            class_no_spaces = _class.replace(" ", "")  # to allow the use of metrics calculation utility
+            xmin_rescaled = int(xmin * self.image_scale[0])
+            xmax_rescaled = int(xmax * self.image_scale[0])
+            ymin_rescaled = int(ymin * self.image_scale[1])
+            ymax_rescaled = int(ymax * self.image_scale[1])
+            self.log_network_results.append([self.frame - 1, class_no_spaces, str(score), (xmin_rescaled, ymin_rescaled), (xmax_rescaled, ymax_rescaled)])
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
