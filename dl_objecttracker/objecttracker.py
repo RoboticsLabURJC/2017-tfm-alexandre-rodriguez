@@ -40,17 +40,17 @@ def selectVideoSource(cfg, gui_cfg):
     from Camera.camera import Camera
     if source.lower() == 'local':
         cam_idx = cfg['ObjectTracker']['Local']['DeviceNo']
-        print('  Chosen source: local camera (index %d)' % (cam_idx))
+        print('  Chosen source: local camera (index %d)' % cam_idx)
         cam = Camera(cam_idx, gui_cfg)
     elif source.lower() == 'video':
         video_path = cfg['ObjectTracker']['Video']['Path']
-        print('  Chosen source: local video (%s)' % (video_path))
+        print('  Chosen source: local video (%s)' % video_path)
         cam = Camera(video_path, gui_cfg)
     elif source.lower() == 'stream':
         print('  Chosen source: stream using ROS')
         cam = Camera('stream', gui_cfg)
     else:
-        raise SystemExit(('%s not supported! Supported source: Local, Video, Stream') % (source))
+        raise SystemExit('%s not supported! Supported source: Local, Video, Stream' % source)
 
     return cam
 
@@ -69,8 +69,9 @@ def selectNetwork(cfg):
         sys.path.append('Net/Keras')
         from Net.Keras.network import DetectionNetwork
     else:
-        raise SystemExit(('%s not supported! Supported frameworks: Keras, TensorFlow') % (framework))
+        raise SystemExit('%s not supported! Supported frameworks: Keras, TensorFlow' % framework)
     return net_prop, DetectionNetwork
+
 
 def selectTracker(cfg):
     """
@@ -83,8 +84,9 @@ def selectTracker(cfg):
     if library.lower() == 'opencv' or library.lower() == 'dlib':
         print('Using ' + library.lower() + ' tracking.')
     else:
-        raise SystemExit(('%s not supported! Supported trackers of: OpenCV, dlib') % (library))
+        raise SystemExit('%s not supported! Supported trackers of: OpenCV, dlib' % library)
     return tracker_prop, library.lower()
+
 
 def readConfig():
     try:
