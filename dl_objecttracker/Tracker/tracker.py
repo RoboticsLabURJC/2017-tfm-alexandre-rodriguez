@@ -9,12 +9,12 @@ class Tracker:
     def __init__(self, tracker_prop, tracker_lib):
 
         if tracker_lib == 'opencv':
-            self.tracker = cv2.MultiTracker_create()
+            self.trackers_opencv = {}
             self.lib = 'opencv'
             self.type = tracker_prop['Type']
         elif tracker_lib == 'dlib':
             self.lib = 'dlib'
-            self.type = ''
+
         print("Tracker created!")
         self.activated = False
         self.input_detection = None
@@ -35,7 +35,7 @@ class Tracker:
         self.first_image_to_track = True
         self.image = None
         self.network_framework = None
-        self.trackers_dlib = [] #ToDo: rename this vars
+        self.trackers_dlib = []
         self.labels_dlib = []
 
         self.frame_tags = []
@@ -50,8 +50,6 @@ class Tracker:
             if len(self.buffer_in) > 3:
                 self.buffer_in.pop(0)
                 self.buffer_in.pop(0)
-                # self.buffer_in.pop(0)
-                # self.buffer_in.pop(0)
                 self.image = self.buffer_in.pop(0)  # jump frames
             elif len(self.buffer_in) > 0:
                 self.image = self.buffer_in.pop(0)
@@ -86,51 +84,58 @@ class Tracker:
             self.counter_fast += 1
             self.tracker_fast = True
 
-    def configureFirstTrack(self, detection, type):
+    def configureFirstTrackDlib(self, detection_dlib):
+        ''' Configures the dlib tracker with the detections from the net. '''
+
+        if self.network_framework == "Keras":
+            xmin = detection_dlib[1]
+            ymin = detection_dlib[0]
+            xmax = detection_dlib[3]
+            ymax = detection_dlib[2]
+        elif self.network_framework == "TensorFlow":
+            xmin = detection_dlib[0]
+            ymin = detection_dlib[1]
+            xmax = detection_dlib[2]
+            ymax = detection_dlib[3]
+
+        self.labels_dlib = self.input_label
+        t = dlib.correlation_tracker()
+        rect = dlib.rectangle(xmin, ymin, xmax, ymax)
+        if not rect.is_empty():
+            t.start_track(self.image, rect)
+            self.trackers_dlib.append(t)
+
+    def createOpencvTracker(self, type, detection):
+        ''' Configures the opencv tracker type. '''
+        if type == 'kcf':
+            self.trackers_opencv = {key: cv2.TrackerKCF_create() for key in range(len(detection))}
+        elif type == 'boosting':
+            self.trackers_opencv = {key: cv2.TrackerBoosting_create() for key in range(len(detection))}
+        elif type == 'mil':
+            self.trackers_opencv = {key: cv2.TrackerMIL_create() for key in range(len(detection))}
+        elif type == 'tld':
+            self.trackers_opencv = {key: cv2.TrackerTLD_create() for key in range(len(detection))}
+        elif type == 'medianflow':
+            self.trackers_opencv = {key: cv2.TrackerMedianFlow_create() for key in range(len(detection))}
+        elif type == 'csrt':
+            self.trackers_opencv = {key: cv2.TrackerCSRT_create() for key in range(len(detection))}
+        elif type == 'mosse':
+            self.trackers_opencv = {key: cv2.TrackerMOSSE_create() for key in range(len(detection))}
+
+    def configureFirstTrackOpencv(self, item, detection_opencv):
         ''' Configures the tracker with the detections from the net. '''
 
-        if self.lib == 'dlib':
-            if self.network_framework == "Keras":
-                xmin = detection[1]
-                ymin = detection[0]
-                xmax = detection[3]
-                ymax = detection[2]
-            elif self.network_framework == "TensorFlow":
-                xmin = detection[0]
-                ymin = detection[1]
-                xmax = detection[2]
-                ymax = detection[3]
-
-            t = dlib.correlation_tracker()
-            rect = dlib.rectangle(xmin, ymin, xmax, ymax)
-            if not rect.is_empty():
-                t.start_track(self.image, rect)
-                self.trackers_dlib.append(t)
-
-        else:
-            if self.network_framework == "Keras":
-                xmin = detection[1]
-                ymin = detection[0]
-                xmax = detection[3] - xmin
-                ymax = detection[2] - ymin
-            elif self.network_framework == "TensorFlow":
-                xmin = detection[0]
-                ymin = detection[1]
-                xmax = detection[2] - xmin
-                ymax = detection[3] - ymin
-
-            OPENCV_OBJECT_TRACKERS = {
-                "kcf": cv2.TrackerKCF_create,
-                "boosting": cv2.TrackerBoosting_create,
-                "mil": cv2.TrackerMIL_create,
-                "tld": cv2.TrackerTLD_create,
-                "medianflow": cv2.TrackerMedianFlow_create,
-                "csrt": cv2.TrackerCSRT_create,
-                "mosse": cv2.TrackerMOSSE_create
-            }
-            tracker = OPENCV_OBJECT_TRACKERS[type.lower()]()
-            self.tracker.add(tracker, self.image, (
-                xmin, ymin, xmax, ymax))
+        if self.network_framework == "Keras":
+            xmin = detection_opencv[1]
+            ymin = detection_opencv[0]
+            xmax = detection_opencv[3] - xmin
+            ymax = detection_opencv[2] - ymin
+        elif self.network_framework == "TensorFlow":
+            xmin = detection_opencv[0]
+            ymin = detection_opencv[1]
+            xmax = detection_opencv[2] - xmin
+            ymax = detection_opencv[3] - ymin
+        self.trackers_opencv[item].init(self.image, (xmin, ymin, xmax, ymax))
 
     def track(self):
         ''' The tracking function. '''
@@ -139,8 +144,6 @@ class Tracker:
 
         if detection is not None and self.new_detection:  # new detection from net
 
-            if self.lib == 'opencv':
-                self.tracker = cv2.MultiTracker_create()
             self.last_fps_buffer = [0 for _ in range(3)]
             self.first_image_to_track = True
 
@@ -160,24 +163,27 @@ class Tracker:
                     if self.new_detection:
                         self.trackers_dlib = []
                         self.labels_dlib = []
-                for i in range(len(detection)):
                     if self.first_image_to_track:  # create multitracker only in the first frame of the buffer
-                        self.configureFirstTrack(detection[i], self.type)
-                        if self.lib == 'dlib':
-                            self.labels_dlib = self.input_label
+                        for i in range(len(detection)):
+                            self.configureFirstTrackDlib(detection[i])
+
+                elif self.lib == 'opencv':
+                    if self.first_image_to_track:  # create multitracker only in the first frame of the buffer
+                        self.createOpencvTracker(self.type.lower(), detection)
+                        for i in range(len(detection)):
+                            self.configureFirstTrackOpencv(i, detection[i])
 
                 self.first_image_to_track = False
                 self.new_detection = False
 
                 if self.lib == 'opencv':
-                    _, boxes = self.tracker.update(self.image)
-
-                    for i, newbox in enumerate(boxes):
-                        p1 = (int(newbox[0]), int(newbox[1]))
-                        p2 = (int(newbox[0] + newbox[2]), int(newbox[1] + newbox[3]))
-                        if len(self.input_label) == len(boxes):
-                            cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
-                            cv2.putText(self.image, self.input_label[i], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                    for obj, tracker in self.trackers_opencv.items():
+                        ok, bbox = tracker.update(self.image)
+                        if ok:
+                            p1 = (int(bbox[0]), int(bbox[1]))
+                            p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                            cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[obj]], thickness=2)
+                            cv2.putText(self.image, self.input_label[obj], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (0, 0, 0), thickness=2, lineType=2)
                             cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
@@ -185,37 +191,38 @@ class Tracker:
                                         (255, 0, 0), thickness=1, lineType=1)
                             # log
                             if self.frame_tags:
-                                label_no_spaces = self.input_label[i].replace(" ",
+                                label_no_spaces = self.input_label[obj].replace(" ",
                                                                  "")  # to allow the use of metrics calculation utility
                                 p1_rescaled = (int(p1[0]*self.image_scale[0]), int(p1[1]*self.image_scale[1]))
                                 p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
                                 self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])  # simulated confidence of tracking = 0
 
-                else:
+                elif self.lib == 'dlib':
                     for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)):
-                        # update the tracker and grab the position of the tracked object
-                        t.update(self.image)
-                        pos = t.get_position()
+                        # update the tracker
+                        tracking_quality = t.update(self.image)
+                        if tracking_quality >= 7:  # check tracking quality
+                            pos = t.get_position()  # grab the position of the tracked object
 
-                        # unpack the position object
-                        p1 = (int(pos.left()), int(pos.top()))
-                        p2 = (int(pos.right()), int(pos.bottom()))
+                            # unpack the position object
+                            p1 = (int(pos.left()), int(pos.top()))
+                            p2 = (int(pos.right()), int(pos.bottom()))
 
-                        # draw the bounding box from the dlib tracker
-                        cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
-                        cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.45,
-                                    (0, 0, 0), thickness=2, lineType=2)
-                        cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20),
-                                    cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.45,
-                                    (255, 0, 0), thickness=1, lineType=1)
-                        # log
-                        if self.frame_tags:
-                            label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
-                            p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
-                            p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
-                            self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])
+                            # draw the bounding box from the dlib tracker
+                            cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                            cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.45,
+                                        (0, 0, 0), thickness=2, lineType=2)
+                            cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20),
+                                        cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.45,
+                                        (255, 0, 0), thickness=1, lineType=1)
+                            # log
+                            if self.frame_tags:
+                                label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
+                                p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
+                                p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
+                                self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)
