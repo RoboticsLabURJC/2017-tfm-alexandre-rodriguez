@@ -42,6 +42,7 @@ class Tracker:
         self.log_data = []
         self.log_tracking_results = []
         self.log_done = False
+        self.logger_status = True
         self.image_scale = (None, None)
 
     def imageToTrack(self):
@@ -51,6 +52,8 @@ class Tracker:
                 self.buffer_in.pop(0)
                 self.buffer_in.pop(0)
                 self.image = self.buffer_in.pop(0)  # jump frames
+                self.logger_status = False  # if frames are skipped not to log results, metrics calculation will fail
+                print('INFO: Logging desactivated during tracking due to frames skipping.')
             elif len(self.buffer_in) > 0:
                 self.image = self.buffer_in.pop(0)
         elif self.tracker_fast and self.counter_fast == 1 and len(self.buffer_in) > 0:
@@ -190,7 +193,7 @@ class Tracker:
                                         0.45,
                                         (255, 0, 0), thickness=1, lineType=1)
                             # log
-                            if self.frame_tags:
+                            if self.logger_status and self.frame_tags:
                                 label_no_spaces = self.input_label[obj].replace(" ",
                                                                  "")  # to allow the use of metrics calculation utility
                                 p1_rescaled = (int(p1[0]*self.image_scale[0]), int(p1[1]*self.image_scale[1]))
@@ -218,7 +221,7 @@ class Tracker:
                                         0.45,
                                         (255, 0, 0), thickness=1, lineType=1)
                             # log
-                            if self.frame_tags:
+                            if self.logger_status and self.frame_tags:
                                 label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
                                 p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
                                 p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
@@ -239,6 +242,9 @@ class Tracker:
 
     def setFrameTags(self, tags):
         self.frame_tags = tags
+
+    def setLoggerStatus(self, logger_status):
+        self.logger_status = logger_status
 
     def setInputDetection(self, bbox, state):
         ''' Set bboxes coordinates and state of new detection. '''

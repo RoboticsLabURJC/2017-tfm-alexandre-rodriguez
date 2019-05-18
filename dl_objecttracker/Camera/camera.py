@@ -56,8 +56,8 @@ class Camera:
         self.network_framework = None
         self.filename_offset = 0
         self.last_frames_video = False
-
         self.frame_tag = []
+        self.logger_status = True  # logging on by default
 
         # image source: stream ROS
         if cam == 'stream':
@@ -145,16 +145,24 @@ class Camera:
         self.network = network
         self.t_network = t_network
         self.network_framework = network.framework
+        self.network.logger_status = self.logger_status
 
     def setTracker(self, tracker):
         ''' Declares the Tracker object. '''
         self.tracker = tracker
         self.tracker.network_framework = self.network_framework  # indicates the neural network type to the tracker
+        self.tracker.logger_status = self.logger_status
 
     def toggleNetworkAndTracker(self):
         ''' Network and Tracker off. '''
         self.network.toggleNetwork()
         self.tracker.activated = False
+
+    def setLogger(self, logger_status):
+        if logger_status:
+            self.logger_status = True
+        else:
+            self.logger_status = False
 
     def trackerConfiguration(self):
         ''' Initializes tracker parameters. '''
@@ -296,6 +304,10 @@ class Camera:
                 else:  # gui off, save image
                     saved_image = cv2.cvtColor(im_net, cv2.COLOR_BGR2RGB)
                     cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
-            if not self.network.activated and not self.tracker.activated:
+
+            if self.tracker.logger_status and not self.network.activated and not self.tracker.activated:
                 self.tracker.logTracking()
                 self.network.logNetwork()
+
+            if not self.network.activated and not self.tracker.activated:
+                print('Finished processing video, please close the window...')
