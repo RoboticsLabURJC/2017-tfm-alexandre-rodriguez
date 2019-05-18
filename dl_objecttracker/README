@@ -19,6 +19,8 @@ To use the ROS stream you need to launch the usb_cam node in another terminal:
 
 	$ roslaunch usb_cam.launch
 
-More info about the steps followed to use ROS and more at my wiki
+When using the application with a local video you can now select if you want or not to use the logging option: ObjectTracker->Logger->Status->on/off
+
+More info at my wiki
 http://jderobot.org/Arodriguez-tfm
 
