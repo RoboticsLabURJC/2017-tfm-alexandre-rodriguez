@@ -134,7 +134,7 @@ class Camera:
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
         self.network.image_scale = (float(self.im_width)/self.image_net_size[0], float(self.im_height)/self.image_net_size[1])
         self.tracker.image_scale = self.network.image_scale
-        im_resized = cv2.resize(im_resized, self.image_net_size, cv2.INTER_NEAREST)  #ToDo: allow different input sizes
+        im_resized = cv2.resize(im_resized, self.image_net_size, cv2.INTER_NEAREST)
         return im_resized
 
     def setGUI(self, gui):

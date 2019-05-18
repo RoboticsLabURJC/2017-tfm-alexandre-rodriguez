@@ -20,7 +20,7 @@ ObjectTracker:
     Model: frozen_inference_graph.pb
     Dataset: COCO  # available: VOC, COCO, KITTI, OID, PET
     InputSize: [700,700]  # only some models allow changing this size
-    Confidence: 0.6
+    Confidence: 0.6  # confidence threshold for detections
 
   Tracker:
     Lib: OpenCV  # Currently supported: "OpenCV" or "dlib"
