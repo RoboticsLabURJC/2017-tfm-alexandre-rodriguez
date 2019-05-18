@@ -88,6 +88,15 @@ def selectTracker(cfg):
     return tracker_prop, library.lower()
 
 
+def readLoggerStatus(cfg):
+    logger_status = cfg['ObjectTracker']['Logger']['Status']
+    if logger_status:
+        print('Logging activated.')
+    else:
+        print('Logging desactivated.')
+    return logger_status
+
+
 def readConfig():
     try:
         with open(sys.argv[1], 'r') as stream:
@@ -112,6 +121,7 @@ if __name__ == '__main__':
     cam = selectVideoSource(cfg, gui_cfg)
     net_prop, DetectionNetwork = selectNetwork(cfg)
     tracker_prop, tracker_lib_prop = selectTracker(cfg)
+    logger_status = readLoggerStatus(cfg)
 
     network = DetectionNetwork(net_prop)
     # Threading Network
@@ -129,6 +139,7 @@ if __name__ == '__main__':
     cam.setGUI(window)
     cam.setNetwork(network, t_network)
     cam.setTracker(tracker)
+    cam.setLogger(logger_status)
 
     # Threading camera
     t_cam = ThreadCamera(cam)

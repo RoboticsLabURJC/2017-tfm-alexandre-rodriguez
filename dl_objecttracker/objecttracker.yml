@@ -1,11 +1,11 @@
 ObjectTracker:
-  Source: Stream # Local (local camera), Video (local file), Stream (ROS/ICE)
+  Source: Video # Local (local camera), Video (local file), Stream (ROS/ICE)
 
   Local:
     DeviceNo: 1 # Device number for the desired webcam
 
   Video:
-    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/old_videos/tud-campus-sequence.avi"
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-11.mp4"
 
   Stream:
     Server: ROS # "ROS", "ICE", "Deactivate"
@@ -23,4 +23,8 @@ ObjectTracker:
   Tracker:
     Lib: OpenCV  # Currently supported: "OpenCV" or "dlib"
     Type: MOSSE  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
+
+  Logger:
+    Status: on  # turn on/off the logging of the results: "on" or "off"
+
   NodeName: dl-objecttracker
