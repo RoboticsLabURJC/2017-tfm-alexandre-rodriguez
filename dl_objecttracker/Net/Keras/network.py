@@ -33,6 +33,8 @@ class DetectionNetwork:
         self.label = None
         self.colors = None
         self.frame = None
+        # attributes set by yml config
+        self.confidence_threshold = None
         # new necessary attributes from dl-objectdetector network architecture
         self.original_height = None
         self.original_width = None
@@ -93,8 +95,8 @@ class DetectionNetwork:
         self.img_height = input_size[1]
         self.img_width = input_size[2]
         # Factors to rescale the output bounding boxes
-        self.height_factor = np.true_divide(320, self.img_height)
-        self.width_factor = np.true_divide(480, self.img_width)
+        self.height_factor = np.true_divide(self.img_height, self.img_height)
+        self.width_factor = np.true_divide(self.img_width, self.img_width)
 
         # Output preallocation
         self.predictions = np.asarray([])
@@ -111,7 +113,7 @@ class DetectionNetwork:
         if input_image is not None:
             # preprocessing
             as_image = Image.fromarray(input_image)
-            resized = as_image.resize((self.img_width,self.img_height), Image.NEAREST)
+            resized = as_image.resize((self.img_width, self.img_height), Image.NEAREST)
             np_resized = image.img_to_array(resized)
 
             input_col = []
@@ -123,9 +125,9 @@ class DetectionNetwork:
             self.label = []
             self.scores = []
             boxes = []
-            confidence_threshold = 0.5
+
             # which predictions are above the confidence threshold?
-            y_pred_thresh = [y_pred[k][y_pred[k,:,1] > confidence_threshold] for k in range(y_pred.shape[0])]
+            y_pred_thresh = [y_pred[k][y_pred[k,:,1] > self.confidence_threshold] for k in range(y_pred.shape[0])]
             # iterate over them
             for box in y_pred_thresh[0]:
                 self.label.append(self.classes[int(box[0])])

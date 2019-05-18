@@ -63,6 +63,8 @@ def selectNetwork(cfg):
     """
     net_prop = cfg['ObjectTracker']['Network']
     framework = net_prop['Framework']
+    image_net_size = net_prop['InputSize']
+    confidence = net_prop['Confidence']
     if framework.lower() == 'tensorflow':
         from Net.TensorFlow.network import DetectionNetwork
     elif framework.lower() == 'keras':
@@ -70,7 +72,7 @@ def selectNetwork(cfg):
         from Net.Keras.network import DetectionNetwork
     else:
         raise SystemExit('%s not supported! Supported frameworks: Keras, TensorFlow' % framework)
-    return net_prop, DetectionNetwork
+    return net_prop, image_net_size, confidence, DetectionNetwork
 
 
 def selectTracker(cfg):
@@ -119,7 +121,7 @@ if __name__ == '__main__':
 
     cfg = readConfig()
     cam = selectVideoSource(cfg, gui_cfg)
-    net_prop, DetectionNetwork = selectNetwork(cfg)
+    net_prop, image_net_size, confidence, DetectionNetwork = selectNetwork(cfg)
     tracker_prop, tracker_lib_prop = selectTracker(cfg)
     logger_status = readLoggerStatus(cfg)
 
@@ -140,6 +142,7 @@ if __name__ == '__main__':
     cam.setNetwork(network, t_network)
     cam.setTracker(tracker)
     cam.setLogger(logger_status)
+    cam.setNetworkParams(image_net_size, confidence)
 
     # Threading camera
     t_cam = ThreadCamera(cam)

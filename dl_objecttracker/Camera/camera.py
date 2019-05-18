@@ -46,6 +46,7 @@ class Camera:
         self.source = None
         self.im_height = None
         self.im_width = None
+        self.image_net_size = (None, None)
         self.gui_cfg = gui_cfg
         self.im = None
         self.buffer = []
@@ -110,9 +111,9 @@ class Camera:
                 self.im_width = frame.shape[1]
                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 im = self.resizeImage(im)
-                im = np.reshape(im, (512, 512, 3))
+                im = np.reshape(im, (self.image_net_size[0], self.image_net_size[1], 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (450, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
+                cv2.putText(im, str(self.frame_counter), (int(self.image_net_size[0]/1.13), int(self.image_net_size[1]/1.06)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
                             thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
 
@@ -121,9 +122,9 @@ class Camera:
             if frame is not None:
                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 im = self.resizeImage(im)
-                im = np.reshape(im, (512, 512, 3))
+                im = np.reshape(im, (self.image_net_size[0], self.image_net_size[1], 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (450, 480), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
+                cv2.putText(im, str(self.frame_counter), (int(self.image_net_size[0]/1.13), int(self.image_net_size[1]/1.06)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
                             thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
         return im
@@ -131,9 +132,9 @@ class Camera:
     def resizeImage(self, im):
         ''' Resizes the image. '''
         im_resized = np.reshape(im, (self.im_height, self.im_width, 3))
-        self.network.image_scale = (float(self.im_width)/512, float(self.im_height)/512)
+        self.network.image_scale = (float(self.im_width)/self.image_net_size[0], float(self.im_height)/self.image_net_size[1])
         self.tracker.image_scale = self.network.image_scale
-        im_resized = cv2.resize(im_resized, (512, 512), cv2.INTER_NEAREST)  #ToDo: allow different input sizes
+        im_resized = cv2.resize(im_resized, self.image_net_size, cv2.INTER_NEAREST)  #ToDo: allow different input sizes
         return im_resized
 
     def setGUI(self, gui):
@@ -163,6 +164,10 @@ class Camera:
             self.logger_status = True
         else:
             self.logger_status = False
+
+    def setNetworkParams(self, image_net_size, confidence):
+        self.image_net_size = (image_net_size[0], image_net_size[1])
+        self.network.confidence_threshold = confidence
 
     def trackerConfiguration(self):
         ''' Initializes tracker parameters. '''

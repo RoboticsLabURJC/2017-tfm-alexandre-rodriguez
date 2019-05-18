@@ -24,6 +24,8 @@ class DetectionNetwork:
         self.label = None
         self.colors = None
         self.frame = None
+        # attributes set by yml config
+        self.confidence_threshold = None
         # new necessary attributes from dl-objectdetector network architecture
         self.original_height = None
         self.original_width = None
@@ -94,8 +96,6 @@ class DetectionNetwork:
             self.sess.run(
                     [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
                     feed_dict={self.image_tensor: dummy_tensor})
-
-        self.confidence_threshold = 0.5
 
         print("Network ready!")
 
