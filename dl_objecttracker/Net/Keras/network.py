@@ -44,6 +44,8 @@ class DetectionNetwork:
         self.net_has_masks = False
         self.log_network_results = []
         self.log_done = False
+        self.logger_status = True
+        self.image_scale = (None, None)
 
         # Parse the dataset to get which labels to yield
         labels_file = LABELS_DICT[net_model['Dataset'].lower()]
@@ -169,12 +171,13 @@ class DetectionNetwork:
             ymax = rect[2]
             cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), self.colors[_class], 3)
             # log
-            class_no_spaces = _class.replace(" ", "")  # to allow the use of metrics calculation utility
-            xmin_rescaled = int(xmin * self.image_scale[0])
-            xmax_rescaled = int(xmax * self.image_scale[0])
-            ymin_rescaled = int(ymin * self.image_scale[1])
-            ymax_rescaled = int(ymax * self.image_scale[1])
-            self.log_network_results.append([self.frame - 1, class_no_spaces, str(score), (xmin_rescaled, ymin_rescaled), (xmax_rescaled, ymax_rescaled)])
+            if self.logger_status:
+                class_no_spaces = _class.replace(" ", "")  # to allow the use of metrics calculation utility
+                xmin_rescaled = int(xmin * self.image_scale[0])
+                xmax_rescaled = int(xmax * self.image_scale[0])
+                ymin_rescaled = int(ymin * self.image_scale[1])
+                ymax_rescaled = int(ymax * self.image_scale[1])
+                self.log_network_results.append([self.frame - 1, class_no_spaces, str(score), (xmin_rescaled, ymin_rescaled), (xmax_rescaled, ymax_rescaled)])
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
@@ -194,6 +197,9 @@ class DetectionNetwork:
                 yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
             self.log_done = True
             print('Log network done!')
+
+    def setLoggerStatus(self, logger_status):
+        self.logger_status = logger_status
 
     def setInputImage(self, im, frame_number):
         ''' Sets the input image of the network. '''
