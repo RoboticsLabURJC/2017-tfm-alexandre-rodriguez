@@ -15,7 +15,6 @@ class Tracker:
         elif tracker_lib == 'dlib':
             self.lib = 'dlib'
 
-        print("Tracker created!")
         self.activated = False
         self.input_detection = None
         self.new_detection = False
@@ -37,13 +36,15 @@ class Tracker:
         self.network_framework = None
         self.trackers_dlib = []
         self.labels_dlib = []
-
         self.frame_tags = []
         self.log_data = []
         self.log_tracking_results = []
+        self.fps_tracking_results = []
         self.log_done = False
         self.logger_status = True
         self.image_scale = (None, None)
+
+        print("Tracker created!")
 
     def imageToTrack(self):
         ''' Assigns a new image to track depending on certain conditions. '''
@@ -70,7 +71,8 @@ class Tracker:
         self.last_fps_buffer.pop(0)
         self.last_fps_buffer.append(fps_rate)
         self.avg_fps = sum(self.last_fps_buffer) / len(self.last_fps_buffer)
-        #print('FPS avg: ' + str(self.avg_fps))
+        if self.logger_status:
+            self.fps_tracking_results.append(fps_rate)  # to get final fps mean
         return self.avg_fps
 
     def trackerSpeedMode(self, avg_fps):
@@ -238,7 +240,6 @@ class Tracker:
         ''' Set buffer input of tracker. '''
         self.buffer_in = buf
         self.len_buffer_in = len(self.buffer_in)
-        #print('New buffer with length ' + str(len(self.buffer_in)))
 
     def setFrameTags(self, tags):
         self.frame_tags = tags
@@ -314,7 +315,11 @@ class Tracker:
         if os.path.isfile('log_tracking.yaml') and not self.log_done:
             with open('log_tracking.yaml', 'w') as yamlfile:
                 yaml.safe_dump(self.log_tracking_results, yamlfile, explicit_start=True, default_flow_style=False)
-            self.log_done = True
+        if os.path.isfile('fps_tracking.yaml') and not self.log_done:
+            with open('fps_tracking.yaml', 'w') as yamlfile:
+                self.fps_tracking_results = round((sum(self.fps_tracking_results)/len(self.fps_tracking_results)), 2)
+                yaml.safe_dump(self.fps_tracking_results, yamlfile, explicit_start=True, default_flow_style=False)
+                self.log_done = True
             print('Log tracker done!')
 
     def toggleTracker(self):

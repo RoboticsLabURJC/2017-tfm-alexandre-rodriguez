@@ -1,13 +1,14 @@
 import os
+import time
 import yaml
-from keras import backend as K
-from keras.models import load_model
-from keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import h5py
 import cv2
 
+from keras import backend as K
+from keras.models import load_model
+from keras.preprocessing import image
 from Net.Keras.keras_loss_function.keras_ssd_loss import SSDLoss
 from Net.Keras.keras_layers.keras_layer_AnchorBoxes import AnchorBoxes
 from Net.Keras.keras_layers.keras_layer_DecodeDetections import DecodeDetections
@@ -45,6 +46,7 @@ class DetectionNetwork:
         self.framework = "Keras"
         self.net_has_masks = False
         self.log_network_results = []
+        self.fps_network_results = []
         self.log_done = False
         self.logger_status = True
         self.image_scale = (None, None)
@@ -111,6 +113,9 @@ class DetectionNetwork:
     def predict(self):
         input_image = self.input_image
         if input_image is not None:
+
+            start_time = time.time()
+
             # preprocessing
             as_image = Image.fromarray(input_image)
             resized = as_image.resize((self.img_width, self.img_height), Image.NEAREST)
@@ -138,14 +143,17 @@ class DetectionNetwork:
                 ymax = int(box[5] * self.height_factor)
                 boxes.append([ymin, xmin, ymax, xmax])
             self.detection = boxes
+
+            fps_rate = 1.0 / (time.time() - start_time)  # fps calculation includes preprocessing and postprocessing
+
             if self.net_has_masks: #TODO: draw masks of mask nets, use tf obj det tutorial
                 #from Net.utils import visualization_utils
                 #print('draw mask')
                 #visualization_utils.draw_mask_on_image_array(self.input_image, masks)
                 #self.display_instances(self.input_image, self.detection, masks, self.label, self.scores)
-                detected_image = self.renderModifiedImage()
+                detected_image = self.renderModifiedImage(fps_rate)
             else:
-                detected_image = self.renderModifiedImage()
+                detected_image = self.renderModifiedImage(fps_rate)
             self.activated = False
             zeros = False
             print('Detection done!')
@@ -156,7 +164,7 @@ class DetectionNetwork:
 
         self.output_image = [detected_image, zeros]
 
-    def renderModifiedImage(self):  # from utils visualize of Tensorflow folder
+    def renderModifiedImage(self, fps_rate):  # from utils visualize of Tensorflow folder
         image_np = np.copy(self.input_image)
 
         detection_boxes = self.detection
@@ -180,6 +188,7 @@ class DetectionNetwork:
                 ymin_rescaled = int(ymin * self.image_scale[1])
                 ymax_rescaled = int(ymax * self.image_scale[1])
                 self.log_network_results.append([self.frame - 1, class_no_spaces, str(score), (xmin_rescaled, ymin_rescaled), (xmax_rescaled, ymax_rescaled)])
+                self.fps_network_results.append(fps_rate)
 
             label = "{0} ({1} %)".format(_class, int(score * 100))
             [size, base] = cv2.getTextSize(label, self.font, self.scale, 2)
@@ -197,7 +206,12 @@ class DetectionNetwork:
         if os.path.isfile('log_network.yaml') and not self.log_done:
             with open('log_network.yaml', 'w') as yamlfile:
                 yaml.safe_dump(self.log_network_results, yamlfile, explicit_start=True, default_flow_style=False)
-            self.log_done = True
+        if os.path.isfile('fps_network.yaml') and not self.log_done:
+            with open('fps_network.yaml', 'w') as yamlfile:
+                self.fps_network_results = round((sum(self.fps_network_results) / len(self.fps_network_results)),
+                                                  3)
+                yaml.safe_dump(self.fps_network_results, yamlfile, explicit_start=True, default_flow_style=False)
+                self.log_done = True
             print('Log network done!')
 
     def setLoggerStatus(self, logger_status):
