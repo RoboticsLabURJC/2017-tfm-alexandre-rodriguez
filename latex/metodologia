@@ -1,6 +1,0 @@
-\subsection{Metodología}
-Para la consecución de los objetivos marcados se han empleado diferentes herramientas para permitir el seguimiento del trabajo por parte del tutor. Así se puede ver el trabajo realizado y aportar los comentarios o correcciones que sean necesarios.
-
-Como herramienta principal, se establecen reuniones semanales con el tutor Jose María Cañas que permiten poner en conocimiento y discutir los resultados obtenidos semanalmente y los siguientes pasos a dar durante la próxima semana.
-
-Como herramientas secundarias, se utiliza una bitácora y un repositorio de GitHub, que permiten agilizar las reuniones al tener acceso de antemano al trabajo realizado. Esta bitácora se crea utilizando la \textit{Wiki} de JdeRobot\footnote {\href{http://jderobot.org/Arodriguez-tfm}{http://jderobot.org/Arodriguez-tfm}}, redactando cada semana el trabajo realizado y los resultados obtenidos. El repositorio de GitHub\footnote {\href{https://github.com/RoboticsURJC-students/2017-tfm-alexandre-rodriguez}{https://github.com/RoboticsURJC-students/2017-tfm-alexandre-rodriguez}} permite al tutor acceder al código desarrollado, probarlo y establecer correcciones sobre el mismo si fuese necesario.
