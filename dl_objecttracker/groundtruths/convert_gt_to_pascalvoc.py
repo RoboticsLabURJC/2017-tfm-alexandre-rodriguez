@@ -8,7 +8,7 @@ def get_files(dataset_name, path_file, previous_frame, target):
     if dataset_name == 'mot':  # ToDo: include ids in tracking (pending); now not taking id into account
         folder_path = path_file.rsplit('/', 1)[0]
         with open(path_file, 'r') as stream:
-            out = stream.readlines()  # <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <x>, <y>, <z>
+            out = stream.readlines()  # <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <object_type>, <vis_ratio>
             for i in range(len(out)):
                 out[i] = out[i].split(',')
                 with open(folder_path + '/' + str(int(out[i][0]) - 1) + '.txt', 'a') as logfile:
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     target = None
     dataset = 'mot'
     if dataset == 'mot':
-        file_path = path.relpath("/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/MOT17DetLabels/train/MOT17-10/gt/gt.txt")
+        file_path = path.relpath("/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/MOT17DetLabels/train/MOT17-02/gt/gt.txt")
         target = 'person'
     elif dataset == 'otb':
         file_path = path.relpath("/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/OTB100/Basketball/groundtruth_rect.txt")
