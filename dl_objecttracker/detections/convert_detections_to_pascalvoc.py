@@ -11,15 +11,17 @@ def get_files(path_file, previous_frame):
             actual_frame = out[i][0]
             if actual_frame == previous_frame or previous_frame is None:
                 with open(str(actual_frame) + '.txt', 'a') as logfile:
-                    logfile.write(
-                        out[i][1] + " " + str(out[i][2]) + " " + str(out[i][3][0]) + " " + str(out[i][3][1]) + " " + str(out[i][4][0]) + " " + str(out[i][4][
-                            1]) + "\n")
+                    if len(out[i]) > 1:  # this was not an empty frame in terms of detections
+                        logfile.write(
+                            out[i][1] + " " + str(out[i][2]) + " " + str(out[i][3][0]) + " " + str(out[i][3][1]) + " " + str(out[i][4][0]) + " " + str(out[i][4][
+                                1]) + "\n")
             elif actual_frame != previous_frame:
                 with open(str(actual_frame) + '.txt', 'a') as logfile:
-                    logfile.write(
-                        out[i][1] + " " + str(out[i][2]) + " " + str(out[i][3][0]) + " " + str(out[i][3][1]) + " " + str(
-                            out[i][4][0]) + " " + str(out[i][4][
-                                                          1]) + "\n")
+                    if len(out[i]) > 1:  # this was not an empty frame in terms of detections
+                        logfile.write(
+                            out[i][1] + " " + str(out[i][2]) + " " + str(out[i][3][0]) + " " + str(out[i][3][1]) + " " + str(
+                                out[i][4][0]) + " " + str(out[i][4][
+                                                              1]) + "\n")
             previous_frame = actual_frame
 
 

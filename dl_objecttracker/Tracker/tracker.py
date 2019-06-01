@@ -53,8 +53,10 @@ class Tracker:
                 self.buffer_in.pop(0)
                 self.buffer_in.pop(0)
                 self.image = self.buffer_in.pop(0)  # jump frames
-                self.logger_status = False  # if frames are skipped not to log results, metrics calculation will fail
-                print('INFO: Logging desactivated during tracking due to frames skipping.')
+                if self.logger_status:
+                    self.log_tracking_results.append([self.frame_tags[0] - 1])  # log skipped frames
+                    self.log_tracking_results.append([self.frame_tags[0]])
+                print('INFO: Frames skipped during tracking.')
             elif len(self.buffer_in) > 0:
                 self.image = self.buffer_in.pop(0)
         elif self.tracker_fast and self.counter_fast == 1 and len(self.buffer_in) > 0:
@@ -183,8 +185,9 @@ class Tracker:
 
                 if self.lib == 'opencv':
                     for obj, tracker in self.trackers_opencv.items():
-                        ok, bbox = tracker.update(self.image)
-                        if ok:
+                        confidence_ok, bbox = tracker.update(self.image)
+
+                        if confidence_ok:
                             p1 = (int(bbox[0]), int(bbox[1]))
                             p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
                             cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[obj]], thickness=2)
@@ -194,13 +197,15 @@ class Tracker:
                             cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (255, 0, 0), thickness=1, lineType=1)
-                            # log
-                            if self.logger_status and self.frame_tags:
-                                label_no_spaces = self.input_label[obj].replace(" ",
-                                                                 "")  # to allow the use of metrics calculation utility
-                                p1_rescaled = (int(p1[0]*self.image_scale[0]), int(p1[1]*self.image_scale[1]))
-                                p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
-                                self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])  # simulated confidence of tracking = 0
+                        # log
+                        if self.logger_status and self.frame_tags and confidence_ok:
+                            label_no_spaces = self.input_label[obj].replace(" ",
+                                                             "")  # to allow the use of metrics calculation utility
+                            p1_rescaled = (int(p1[0]*self.image_scale[0]), int(p1[1]*self.image_scale[1]))
+                            p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
+                            self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])  # simulated confidence of tracking = 0
+                        elif self.logger_status and self.frame_tags and not confidence_ok:
+                            self.log_tracking_results.append([self.frame_tags[0] - 1])  # logging frames with no trackers (empty file)
 
                 elif self.lib == 'dlib':
                     for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)):
@@ -222,12 +227,14 @@ class Tracker:
                                         cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (255, 0, 0), thickness=1, lineType=1)
-                            # log
-                            if self.logger_status and self.frame_tags:
-                                label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
-                                p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
-                                p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
-                                self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])
+                        # log
+                        if self.logger_status and self.frame_tags and tracking_quality >= 7:
+                            label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility
+                            p1_rescaled = (int(p1[0] * self.image_scale[0]), int(p1[1] * self.image_scale[1]))
+                            p2_rescaled = (int(p2[0] * self.image_scale[0]), int(p2[1] * self.image_scale[1]))
+                            self.log_tracking_results.append([self.frame_tags[0] - 1, label_no_spaces, 0, p1_rescaled, p2_rescaled])
+                        elif self.logger_status and self.frame_tags and tracking_quality < 7:
+                            self.log_tracking_results.append([self.frame_tags[0] - 1])  # logging frames with no trackers (empty file)
 
                 self.buffer_out.append(self.image)
                 avg_fps = self.calculateFPS(start_time)
