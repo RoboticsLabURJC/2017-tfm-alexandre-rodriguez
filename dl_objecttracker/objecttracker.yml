@@ -1,11 +1,11 @@
 ObjectTracker:
-  Source: Video # Local (local camera), Video (local file), Stream (ROS/ICE)
+  Source: Images # Local (local camera), Video (local file), Stream (ROS/ICE), Images (local images)
 
   Local:
     DeviceNo: 1 # Device number for the desired webcam
 
   Video:
-    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-11.mp4"
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-13.mp4"
 
   Stream:
     Server: ROS # "ROS", "ICE", "Deactivate"
@@ -14,17 +14,20 @@ ObjectTracker:
     Topic: "/usb_cam/image_raw"
     Name: cameraA
 
+  Images:
+    Path: "/home/alexandre/Descargas/MOT17Det/train/MOT17-13/img1/%06d.jpg"  # use similar image names' format 
+
   Network:
     Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
     #Model: VGG_coco_SSD_512x512_iter_360000.h5
     Model: frozen_inference_graph.pb
     Dataset: COCO  # available: VOC, COCO, KITTI, OID, PET
-    InputSize: [700,700]  # only some models allow changing this size
+    InputSize: [512,512]  # only some models allow changing this size
     Confidence: 0.6  # confidence threshold for detections
 
   Tracker:
     Lib: OpenCV  # Currently supported: "OpenCV" or "dlib"
-    Type: MOSSE  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
+    Type: KCF  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
 
   Logger:
     Status: on  # turn on/off the logging of the results: "on" or "off"

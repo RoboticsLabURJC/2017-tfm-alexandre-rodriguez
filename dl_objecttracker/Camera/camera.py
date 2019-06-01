@@ -38,7 +38,7 @@ class ROSCamera:
 
 
 class Camera:
-    def __init__(self, cam, gui_cfg):
+    def __init__(self, cam, gui_cfg, source):
         ''' Camera class gets images from live video. '''
 
         # initialize Camera instance attributes
@@ -67,7 +67,7 @@ class Camera:
             self.cam = ROSCamera()
 
         # image source: local camera (OpenCV)
-        elif isinstance(cam, int):
+        elif source == 'local':
             self.cam = cv2.VideoCapture(cam)
             self.source = 'local_camera'
             if not self.cam.isOpened():
@@ -79,22 +79,36 @@ class Camera:
                 self.im_width, self.im_height))
 
         # image source: local video (OpenCV)
-        elif isinstance(cam, str):
+        elif source == 'video':
             self.source = 'local_video'
             from os import path
             video_path = path.expanduser(cam)
             if not path.isfile(video_path):
-                raise SystemExit('%s does not exists. Please check the path.' % video_path)
+                raise SystemExit('%s does not exist. Please check the path.' % video_path)
             self.cam = cv2.VideoCapture(video_path)
             if not self.cam.isOpened():
                 print("%s is not a valid video path." % video_path)
+                raise SystemExit("Please check the video path.")
+            self.im_width = int(self.cam.get(3))
+            self.im_height = int(self.cam.get(4))
+            print('Image size: {0}x{1} px'.format(
+                self.im_width, self.im_height))
+
+        # image source: local images (OpenCV)
+        elif source == 'images':
+            self.source = 'local_images'
+            images_path = cam
+            self.cam = cv2.VideoCapture(images_path, cv2.CAP_IMAGES)
+            if not self.cam.isOpened():
+                print("%s is not a valid images path." % images_path)
+                raise SystemExit("Please check the images path.")
             self.im_width = int(self.cam.get(3))
             self.im_height = int(self.cam.get(4))
             print('Image size: {0}x{1} px'.format(
                 self.im_width, self.im_height))
 
         else:
-            raise SystemExit("Interface camera not connected")
+            raise SystemExit("No correct source selected.")
 
         if self.gui_cfg == 'off':
             print('GUI not set')
@@ -117,7 +131,7 @@ class Camera:
                             thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
 
-        elif self.cam and (self.source == 'local_camera' or self.source == 'local_video'):
+        elif self.cam and (self.source == 'local_camera' or self.source == 'local_video' or self.source == 'local_images'):
             _, frame = self.cam.read()
             if frame is not None:
                 im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -208,7 +222,7 @@ class Camera:
                     else:
                         if self.source == 'local_video' and self.im is not None:
                             self.buffer.append(self.im)  # allows processing last frames in buffer
-                        elif self.source == 'local_camera' or self.source == 'stream_camera':
+                        elif self.source == 'local_camera' or self.source == 'stream_camera' or self.source == 'local_images':
                             self.buffer.append(self.im)
 
                     processed_frame = self.network.getProcessedFrame()

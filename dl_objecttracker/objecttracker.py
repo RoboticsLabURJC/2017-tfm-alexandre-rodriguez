@@ -41,16 +41,20 @@ def selectVideoSource(cfg, gui_cfg):
     if source.lower() == 'local':
         cam_idx = cfg['ObjectTracker']['Local']['DeviceNo']
         print('  Chosen source: local camera (index %d)' % cam_idx)
-        cam = Camera(cam_idx, gui_cfg)
+        cam = Camera(cam_idx, gui_cfg, source.lower())
     elif source.lower() == 'video':
         video_path = cfg['ObjectTracker']['Video']['Path']
         print('  Chosen source: local video (%s)' % video_path)
-        cam = Camera(video_path, gui_cfg)
+        cam = Camera(video_path, gui_cfg, source.lower())
     elif source.lower() == 'stream':
         print('  Chosen source: stream using ROS')
-        cam = Camera('stream', gui_cfg)
+        cam = Camera('stream', gui_cfg, source.lower())
+    elif source.lower() == 'images':
+        images_path = cfg['ObjectTracker']['Images']['Path']
+        print('  Chosen source: local images (%s)' % images_path)
+        cam = Camera(images_path, gui_cfg, source.lower())
     else:
-        raise SystemExit('%s not supported! Supported source: Local, Video, Stream' % source)
+        raise SystemExit('%s not supported! Supported source: Local, Video, Stream, Images' % source)
 
     return cam
 
