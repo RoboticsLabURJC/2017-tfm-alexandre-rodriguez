@@ -1,11 +1,33 @@
 \chapter{Introduction}\label{cap.introduccion}
 \setlength{\parindent}{0pt}
 The Multiple Object Tracking or \textit{MOT} is an important computer vision problem which continues to attract attention because of its potential in both the academic and commercial spheres. The real-world applications of the multiobject tracking are numerous including human-computer interaction, autonomous vehicles, robotics, video indexing, surveillance or security, among others. Many autonomous car projects are taking place globally which require solutions to various different problems including to keep an eye (not literally) to all other moving objects in the area where the car is located. The outputs from the tracking module are a basic input for other modules like maneuver planning and trajectory planning. Many multi-object tracking algorithms have been proposed to solve the problem of real-world traffic monitoring where algorithms have to deal with complex occlusion situations and difficult object matching.\\
-In an era where human-computer interaction has become particularly important due to the quick development of touch display technology available in every smartphone, the hand is key and the object tracking is an important part of this area. For example, it is being used for recording the hand movements for its non-intrusive nature.
+In an era where human-computer interaction has become particularly important due to the quick development of touch display technology available in every smartphone, the hand is key and the object tracking is an important part of this area. For example, it is being used for recording the hand movements because of its non-intrusive nature.
 \\
 The computer vision community have been making efforts in the past few decades but the MOT task is still open for improvement. One of the most studied tracking areas is the pedestrian tracking, mainly because the videos of pedestrians can be seen in a large number of applications with commercial potential. As some studies indicate [1], about the 70\% of the current research done in MOT is dedicated to pedestrians. The difficulty of MOT lies in various challenging situations that can occur such as variation of the illumination and the scale, target deformation or fast motion. Most of this challenges are common to Single Object Tracking (\textit{SOT}) but MOT also needs to solve two main tasks: determining the number of objects that usually vary over time and mantaining their identities.\\
 In the \textit{Artificial Intelligence} era the multi-object tracking makes use also from the AI to improve the tracking algorithms. One of the most well known and currently growing subfields in AI is \textit{Deep Learning}. These techniques are being used for a broad range of applications such as object detection, object classification, biometrics or medical imaging, among others. In most cases, the Deep Learning has beaten the current State-of-the-Art is these areas.\\
 Because of that, this master thesis will make use of Deep Learning to tackle the multi-object tracking problem.
 
 \section{Objectives}
-The objective of this master thesis is to build a multi-object tracker application using deep learning techniques. To achieve this, in this work we are going to use the \textit{Tracking by Detection} approach. This detections are going to be provided by deep learning neural networks.
+After the introduction of the context of the work has been made, in this section we will explain the main objectives of this thesis and the methodology used to fulfil them.
+
+\subsection{Description of the problem}
+The main objective of this master thesis is to build a multi-object tracker application which makes use of two techniques: deep learning and tracking by detection. In this work we are going to study how to use the best of both techniques to build a multiobject tracker which can be capable of run in resources constrained hardware on simulated real-time. This work takes the form of a user application and allows multiple configurations. For this reason, the available solutions are going to be tested in well-known datasets of multiobject tracking challenges which will provide the performances obtained by each configuration of the application. This allows the selection of the best configuration.\\
+This task can be divided into different subobjectives:
+\begin{itemize}
+\item \textbf{Object detector using deep learning}\\
+Learn the fundamentals of object detection using deep learning techniques. Study the performance on both accuracy and speed of these techniques in datasets. Finally, select the default object detector.
+\item \textbf{Development of the tracking module}\\
+Build the tracking module taking into account the necessity of speed in constrained resources.
+\item \textbf{Threads infraestructure and synchronization}\\
+Integration of the modules needed into a thread infrastructure. This will imply a sophisticaded synchronization between them.
+\item \textbf{Test the application}\\
+Finally, validate the solutions obtained and select the best configuration based on the results.
+\end{itemize}
+
+\section{Methodology}
+The development of this project has been weekly followed by the tutor. In this weekly meetings the work done in the previous week was evaluated and discussed ending in new milestones for the following week. This continuous feedback allowed a better development of the project both in terms of understanding of the topic and in terms of time.\\
+Apart from that, the following tools have been employed to follow the project progress and making it visible for the community:
+\begin{itemize}
+    \item \textbf{GitHub:} the code of the project is available on GitHub and was constantly updated. The repository can be accessed in the following link: \url{https://github.com/RoboticsURJC-students/2017-tfm-alexandre-rodriguez}
+    \item \textbf{Wiki:} it has been used as a logbook of the progress of the project. In \url{http://jderobot.org/Arodriguez-tfm} the paths followed to achieve this target can be seen.
+\end{itemize}

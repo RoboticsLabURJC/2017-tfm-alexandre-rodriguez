@@ -31,6 +31,11 @@
 \setlength{\parindent}{0pt}
 \newcommand\abs[1]{\left|#1\right|}
 
+\usepackage[utf8]{inputenc}
+
+\usepackage{dirtytalk}
+\usepackage{float}
+\usepackage{verbatim}
 
 %\usepackage[acronym, nonumberlist]{glossaries}
 %\makeglossaries
@@ -101,7 +106,7 @@
 
 %%%%%%%%%%%%%%% Índices %%%%%%%%%%%%%%%%%%%%
 \renewcommand{\tablename}{Tabla}
-\renewcommand{\listtablename}{List of tables}
+\renewcommand{\listtablename}{List of Tables}
 \tableofcontents
 
 \cleardoublepage % Índice de figuras
@@ -109,7 +114,7 @@
 \listoffigures
 
 \cleardoublepage % Índice de tablas
-\addcontentsline{toc}{chapter}{List of tables}
+\addcontentsline{toc}{chapter}{List of Tables}
 \listoftables 
 
 
@@ -128,29 +133,22 @@
 \lhead[]{CHAPTER \thechapter. Introduction}
 \input{1_introduction.tex}
 
-\lhead[]{CHAPTER \thechapter. Objetivos}
-\include{2-Objectives}
+\lhead[]{CHAPTER \thechapter. State of the Art}
+\input{2_state_of_the_art.tex}
 
-\lhead[]{CHAPTER \thechapter. Teorethic}
-\include{3-Theoretic}
+\lhead[]{CHAPTER \thechapter. Software infraestructure}
+\input{3_software_infraestructure.tex}
 
-\lhead[]{CHAPTER \thechapter. Solution}
-\include{4-Solution}
+\lhead[]{CHAPTER \thechapter. dl-objecttracker}
+\input{4_dl_object_tracker.tex}
 
-\lhead[]{CHAPTER \thechapter. Datasets and evaluation}
-\include{5-Datasets}
+\lhead[]{CHAPTER \thechapter. Experiments and results}
+\input{5_experiments_and_results.tex}
 
-\lhead[]{CHAPTER \thechapter. Experiments}
-\include{6-Experiments}
+\lhead[]{CHAPTER \thechapter. Summary and conclusions}
+\input{6_summary_and_conclusions.tex}
 
-\lhead[]{CHAPTER \thechapter. Conclusions}
-\include{7-Conclusions}
-
-%%%%%%%%%%%%%%% Bibliograía %%%%%%%%%%%%%%%
 \lhead[]{BIBLIOGRAPHY}
-\include{8-Bibliografia}
-
-%\lhead[]{Annex}
-%\include{9-Annexos}
+\input{bibliography.tex}
 
 \end{document}
