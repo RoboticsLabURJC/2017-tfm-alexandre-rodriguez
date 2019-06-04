@@ -220,9 +220,9 @@ class Camera:
                         self.frame_to_process = self.frame_counter
                         self.gui.count += 1
                     else:
-                        if self.source == 'local_video' and self.im is not None:
+                        if (self.source == 'local_video' or self.source == 'local_images') and self.im is not None:
                             self.buffer.append(self.im)  # allows processing last frames in buffer
-                        elif self.source == 'local_camera' or self.source == 'stream_camera' or self.source == 'local_images':
+                        elif self.source == 'local_camera' or self.source == 'stream_camera':
                             self.buffer.append(self.im)
 
                     processed_frame = self.network.getProcessedFrame()
@@ -292,7 +292,7 @@ class Camera:
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
-        elif self.source == 'local_video':  # allows processing last frames in buffer
+        elif self.source == 'local_video' or self.source == 'local_images':  # allows processing last frames in buffer
             if not self.last_frames_video:
                 self.frame_counter -= self.filename_offset  # avoids overwriting filename in last frames
                 self.last_frames_video = not self.last_frames_video
