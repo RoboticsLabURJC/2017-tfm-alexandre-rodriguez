@@ -1,1 +1,16 @@
 \chapter{dl-objecttracker}
+In this chapter, the solution obtained for solving the multiobject tracking using deep learning is explained.
+
+\section{System overview}
+The main contribution of this work is to develop a tracking algorithm capable of tracking different types of objects using deep learning techniques. To achieve this task the selected tracking methodology is the tracking by detection. This method combines detections coming from an object detection neural network with tracking techniques. With this, the idea is to give the final system a balance between speed and accuracy. The detections from the neural networks are usually slower than a tracking but more accuracted whereas the trackers are often quickly obtained but slightly more inaccurated.\\
+The module architecture of the system is summarized in the diagram *%ToDo: diagrama general.
+%*
+As it can be seen the system is built in a modularized way with different threads. There are 4 threads: Camera, GUI, Network and Tracker. All of them are going to be discussed more in deep on its respective sections of the chapter but the general workflow of the system is going to be explained here.\\
+First, the camera thread provides the images or frames to the rest of the threads, i.e.\ the input to the system.
+\section{Camera thread}
+
+\section{GUI thread}
+
+\section{Neural network thread}
+
+\section{Tracker thread}
