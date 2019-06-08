@@ -5,17 +5,10 @@ ObjectTracker:
     DeviceNo: 1 # Device number for the desired webcam
 
   Video:
-    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-13.mp4"
-
-  Stream:
-    Server: ROS # "ROS", "ICE", "Deactivate"
-    Proxy: "cameraA:tcp -h localhost -p 9999"
-    Format: RGB8
-    Topic: "/usb_cam/image_raw"
-    Name: cameraA
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-02.mp4"
 
   Images:
-    Path: "/home/alexandre/Descargas/MOT17Det/train/MOT17-13/img1/%06d.jpg"  # use similar image names' format 
+    Path: "/home/alexandre/Descargas/MOT17Det/train/MOT17-02/img1/%06d.jpg"  # use similar image names' format 
 
   Network:
     Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
@@ -27,7 +20,7 @@ ObjectTracker:
 
   Tracker:
     Lib: OpenCV  # Currently supported: "OpenCV" or "dlib"
-    Type: KCF  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
+    Type: MOSSE  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
 
   Logger:
     Status: on  # turn on/off the logging of the results: "on" or "off"
