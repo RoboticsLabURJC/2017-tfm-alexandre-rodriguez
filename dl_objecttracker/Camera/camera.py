@@ -58,7 +58,7 @@ class Camera:
         self.filename_offset = 0
         self.last_frames_video = False
         self.frame_tag = []
-        self.logger_status = True  # logging on by default
+        self.logger_status = False  # logging off by default
 
         # image source: stream ROS
         if cam == 'stream':
