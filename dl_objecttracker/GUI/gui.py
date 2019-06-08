@@ -9,14 +9,7 @@
 #
 
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtWidgets import QPushButton
 import numpy as np
-import sys
-
-from Net.threadnetwork import ThreadNetwork as t_net
-from Camera.threadcamera import ThreadCamera as t_cam
-from Tracker.threadtracker import ThreadTracker as t_tracker
-from GUI.threadgui import ThreadGUI as t_gui
 
 
 class GUI(QtWidgets.QWidget):
