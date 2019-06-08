@@ -1,5 +1,5 @@
 \chapter{Software infraestructure}
-Before going deeper inside the software implementation made to solve the task of multiobject tracking it is necessary to introduce the software infraestructure needed to accomplish it. The name selected for the component or application built is \textit{dl-objecttracker}. This component is completely written in Python. In particular the Python version used is the 2.7.12 mainly due to the compatibility with ROS. The component needs a set of parts for its perfect operation, due to the nature of the task the majority of them are related to the fields of computer vision, machine learning, deep learning and programming. The following are some of the most important ones.
+Before going deeper inside the software implementation made to solve the task of multiobject tracking it is necessary to introduce the software infraestructure needed to accomplish it. The name selected for the component or application built is \textit{dl-objecttracker}. This component is completely written in Python. In particular the Python version used is the 2.7.12 mainly due to the compatibility with ROS. The component needs a set of parts for its perfect operation, due to the nature of the task the majority of them are related to the fields of computer vision, machine learning, deep learning and programming. The following are the most important ones.
 
 \section{JdeRobot}
 JdeRobot\footnote {\href{https://jderobot.org/Main_Page}{JdeRobot}} is an opensource toolkit which facilitates the development in the fields of robotics and computer vision. Mainly written in the C++ programming language it provides a programming environment based on distributed components which can work together in an asynchronous and concurrent way to build applications. It allows the communication between different devices using \textit{middleware} communications such as ICE or ROS. Furthermore, the toolkit offers a flexible way to develop applications due to the fact that all the components can be written in programming languages including C++ and Python, two of the most widely used programming languages today in the fields of computer vision and robotics.\\
@@ -14,12 +14,14 @@ This JdeRobot node is composed of 3 entities working with an asynchronous design
 \label{fig:object_detector}
 \end{center}
 \end{figure}
-    \item \textbf{ROS}\\
-\end{itemize}
-Making use of the flexibility of the JdeRobot architecture, this component was used as base to build the \textit{Network} entity that it is going to be explained in the next chapter. The configuration of the Object Detector can be changed using an \textit{.yml} file where the user can choose which of the available frameworks wants to deploy on the component. This configuration scheme using a .yml file is also used in our project.\\
+Making use of the flexibility of the JdeRobot architecture, this component was used as base to build the \textit{Network} entity that is going to be explained in the next chapter. The configuration of the Object Detector can be changed using an \textit{.yml} file where the user can choose which of the available frameworks wants to deploy on the component. This configuration scheme using a .yml file is also used in our project.\\
 Refering to the frameworks side, the component offers two options: \textit{Tensorflow} or \textit{Keras}. The user can download pre-trained open models and configure the Object Detector to work with them. The component has been tested in network architectures of type \textit{SSD} and \textit{R-CNN}.\\
 This is a very good and stable base to continue working on and for this reason it was selected to serve as a base of the \textit{dl-objecttracker} Network module.
-
+    \item \textbf{ROS}\\
+The Robot Operating System (ROS\footnote {\href{https://www.ros.org/}{ROS}}) is a framework to write robot software. Its aim is to simplify the task of creating complex and robust robot behavior across different robotic platforms. ROS was designed to enhance the collaboration between groups, allowing to build solutions using collaborative robotics.\\
+In this project, ROS is used to interface with standard USB cameras as a source of images. To do so, it is necessary to install the \texttt{usb\_cam} driver. For more information on the installation process visit my wiki at \footnote {\label{using_ros}\href{https://jderobot.org/Arodriguez-tfm\#Week_24:_Introducing_ROS}{Using ROS}}. ROS uses a request and response mechanism which interactuates between them using ROS messages. The \texttt{Publisher} publishes a ROS topic which can be seen by a \texttt{Subscriber}. This can be used to read from a V4L USB compatible camera (most of the commercial cameras are compatible).\\
+The ROS used is provided by the JdeRobot environment.
+\end{itemize}
 \section{OpenCV}
 OpenCV\footnote {\href{https://opencv.org/}{OpenCV}} (Open Source Computer Vision Library) is a computer vision and machine learning software library originally developed by Intel. It was built to provide a common infraestructure for computer vision applications. OpenCV is written in optimized C and C++ and takes advantage of the IPP instructions of the Intel processors which makes it highly efficient. OpenCV is a multiplatform library with versions for GNU/Linux, Mac OS, Windows and Android.\\ It offers more than 500 functions that provide solutions for areas ranging from the object recognition to the robotic vision. It includes computer vision algorithms from both classic and recent periods (machine learning and deep learning).\\
 In this work, the version used of OpenCV is the 4.0.1.
@@ -42,6 +44,6 @@ Apart from the commented libraries and tools used for the project the following 
 \item \textbf{NumPy}\\
 NumPy is the fundamental Python package for scientific computing specially for working with N-dimensional arrays such as matrixes. Images are basically matrixes at the end so here comes the necessity of this package. The version used of NumPy is the 1.15.4.
 \item \textbf{PyQt}\\
-PyQt provides a Python interface to the Qt library. Qt is a group of C++ libraries and development tools which include functionality to create graphical user interfaces, networks, threads, among others. In this project PyQt is used in the \textit{GUI} module allowing the visualization of the images and the results and the user interaction.\\
+PyQt provides a Python interface to the Qt library. Qt is a group of C++ libraries and development tools which include functionality to create graphical user interfaces, networks or threads, among others. In this project PyQt is used in the \textit{GUI} module allowing the visualization of the images and the results and the user interaction.\\
 The PyQt version used is the PyQt5.
 \end{itemize}

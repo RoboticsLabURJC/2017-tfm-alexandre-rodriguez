@@ -3,14 +3,45 @@ In this chapter, the solution obtained for solving the multiobject tracking usin
 
 \section{System overview}
 The main contribution of this work is to develop a tracking algorithm capable of tracking different types of objects using deep learning techniques. To achieve this task the selected tracking methodology is the tracking by detection. This method combines detections coming from an object detection neural network with tracking techniques. With this, the idea is to give the final system a balance between speed and accuracy. The detections from the neural networks are usually slower than a tracking but more accuracted whereas the trackers are often quickly obtained but slightly more inaccurated.\\
-The module architecture of the system is summarized in the diagram *%ToDo: diagrama general.
-%*
+The module architecture of the system is summarized in the diagram %ToDo: diagrama general.
 As it can be seen the system is built in a modularized way with different threads. There are 4 threads: Camera, GUI, Network and Tracker. All of them are going to be discussed more in deep on its respective sections of the chapter but the general workflow of the system is going to be explained here.\\
-First, the camera thread provides the images or frames to the rest of the threads, i.e.\ the input to the system.
+First, the camera thread provides the images or frames to the rest of the threads, i.e.\ the input to the system. The output of the system is an YML file with the results per frame. The core of the computing is divided in the Network thread and the Tracker thread. This Tracker has a buffer of frames of different size coming from the Camera to work on \textit{simulated real-time}. So, when the first frame is available it is feed to the Network thread which starts doing the inference, this is, it starts detecting objects. Meanwhile, the buffer is accumulating the incoming frames from the Camera until the detection from the Network finishes.\\
+When the detection is available the Tracker thread starts the tracking of the detected objects in the buffer of frames. The last frame in the buffer is used to feed again the Network allowing for a synchronism between the detections and the tracking in the frames in an online mode. This temporal process can be  observed more clearly in the Figure %ToDo: meter figura buffer
+\\As commented before, the buffer changes its size in every iteration but we can not allow the buffer to increase or decrease this size in an unlimited way because that will end blocking the system. If the buffer is too big, the tracking will take more time and the neural network will finish before the tracking is done. This is, the Network is underused. In the other side, if the buffer is too small, the Tracker will end its work before the inference is done in the Network and the Tracker will have to wait much more time to the Network to finish. For these reasons a balance is needed.\\
+The neural network inference time is approximately the same time so this time is fixed. Then, the only part of this processing core where we can change is the Tracker side. The obtained solution consists of a Tracker which constantly measures its frame rate (FPS) allowing the system to slow down or speed up depending on this measurement.\\
+Once all the frames have been processed the Network and Tracker thread stop. After that, the results are logged into the YML files (a file for each frame) and the user can close the application.\\
+The general behavior of the application when running video sequences or raw frames was presented. Nevertheless, it can also handle live stream videos coming from local cameras connected. In this case, the logging of the results is not done but the tracking by detection scheme is the same.\\
+As commented in the chapter 2, the application is configurable using an YML file (\textit{objecttracker.yml}). In the next sections, the implementation of each thread of the system is explained, including the available configuration modifications.
+
 \section{Camera thread}
-
+The Camera module provides the input images to the rest of the system but this images can be obtained using four different sources.
+\begin{itemize}
+    \item \textbf{Local camera} (with OpenCV): the Camera can read from a local camera using the OpenCV routine \texttt{VideoCapture} indicating the device number of the camera.
+    \item \textbf{Local camera} (with ROS): the Camera can use ROS to read from the camera device. In order to do so, the user needs to launch a terminal and type \texttt{roslaunch usb\_cam.launch}. This will publish a ROS topic \texttt{/usb\_cam/image\_raw} that can be subscribed by the Camera module and it will start reading frames from the device. For more information about the launching process please refer to my wiki at \ref{using_ros}.
+    \item \textbf{Local video}: to read from a local video it is also used the OpenCV routine \texttt{VideoCapture} but indicating the video path.
+\item \textbf{Local images}: similarly the local images path needs to be passed to \texttt{VideoCapture}. This source is very useful because most of the datasets are provided as sequences of frames instead of videos. And it can avoid problems such as creating sequences of videos with the wrong duration or frame rate.
+\end{itemize}
+The Camera thread source and options can be modified at the configuration file. The source is selected at \texttt{ObjectTracker->Source}. After that the user needs to indicate the device number \texttt{ObjectTracker->Local->DeviceNo} if using a local camera with OpenCV, the video path \texttt{ObjectTracker->Video->Path} if using a local video or the images path \texttt{ObjectTracker->Images->Path} when using local images.\\
+Before being sent to other threads the image is rescaled according to the neural network input size. It continues all the process with this size. When the final results are obtained this is taken into account to rescale the coordinates of the detections or trackers with respect to the original image size.\\
+Apart from providing images the Camera thread also controls the flow of the application. This is done in this way because the application offers the option of not having GUI. In the first versions of the project the control of the application (the ``main") was implemented in the GUI thread but when the no-GUI option was added this was moved to the Camera thread.\\
+The ``main" is done in the \texttt{update} function of the Camera which is continuously called by the Camera thread. In the Figure %ToDo: figura update camera
+this control can be seen. As the system architecture is based in multiple threads the synchronism between the is crucial. Because of this, the control of the application is done taking into account the synchronism between all the threads, their internal status and variables.
+%ToDo: explicar figura
 \section{GUI thread}
-
-\section{Neural network thread}
-
+The GUI module provides the interface with the user and, as commented before, is optional. It was implemented using the tools provided by PyQt5, in concrete with the packages \textit{QtGui, QtCore} and \textit{QtWidgets}.\\
+The graphical interface has four windows and two buttons. The top-left window shows the input frames in real-time while the top-right one shows the final results. The intermediate results obtained from the Network and the Tracker will be provided at the bottom. The application with GUI has two modes with its respective buttons: ``run continuous" and ``run now". In the first one, the application runs continuously until it finishes the process (the process finishes depending on the image source). In the second one, the user can push the \textit{Run now} button to make the Network detect on the current frame and continue the tracking from that frame towards.
+\section{Network thread} 
+The Network is tasked with the accurated detections in the images which are feeding the Tracker on every iteration. The \textit{dl-objectdetector} component was chosen as the base object detector. It was modified to adapt it to the particularities of our \textit{dl-objecttracker}.\\
+The module supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}}. The successfully tried detectors include SSD and R-CNN detectors such as Mask R-CNN (Inception v2) or SSD (Mobilenet v2). The Keras models are limited to SSD architectures of input size 300x300 or 512x512.\\
+The datasets on which the model was trained needs to be specified to assign the labels to the objects. The supported labels include the VOC, COCO, KITTI, OID and PET datasets. As it ocurred with the Camera module the Network module has configurable options:
+\begin{itemize}
+    \item Framework
+    \item Model
+    \item Dataset
+    \item Input size
+\item Confidence
+\end{itemize}
 \section{Tracker thread}
+%comentar tipos de velocidad, frames desechados, tipos de tracker que se pueden usar
+%%%%%%%%%%%
+%comando de lanzamiento de app y screenshot de app en funcionamiento
