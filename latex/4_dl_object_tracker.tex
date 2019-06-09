@@ -33,15 +33,72 @@ The graphical interface has four windows and two buttons. The top-left window sh
 \section{Network thread} 
 The Network is tasked with the accurated detections in the images which are feeding the Tracker on every iteration. The \textit{dl-objectdetector} component was chosen as the base object detector. It was modified to adapt it to the particularities of our \textit{dl-objecttracker}.\\
 The module supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}}. The successfully tried detectors include SSD and R-CNN detectors such as Mask R-CNN (Inception v2) or SSD (Mobilenet v2). The Keras models are limited to SSD architectures of input size 300x300 or 512x512.\\
-The datasets on which the model was trained needs to be specified to assign the labels to the objects. The supported labels include the VOC, COCO, KITTI, OID and PET datasets. As it ocurred with the Camera module the Network module has configurable options:
+The datasets on which the model was trained needs to be specified to assign the labels to the objects. The supported labels include the VOC, COCO, KITTI, OID and PET datasets. As it ocurred with the Camera module the Network module has configurable options available in \textit{objecttracker.yml}:
 \begin{itemize}
-    \item Framework
-    \item Model
-    \item Dataset
-    \item Input size
-\item Confidence
+    \item Framework: Keras or Tensorflow
+    \item Model: the model file
+    \item Dataset: VOC/COCO/KITTI/OID/PET
+    \item Input size: this input size can be modified depending on the selected model. Some models does not allow to change the input image size
+    \item Confidence: the confidence threshold for the detections obtained. If a detection obtains a confidence value below this value is discarded
 \end{itemize}
+The Network thread basically receives an image (previously resized) and performs the inference. As a result it outputs the detections obtained in the image (if any) and it draws these detections in form of bounding boxes containing also the label and the confidence value.\\
+The logging of the Network results is optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. The same occurs with the results of the Tracker.
 \section{Tracker thread}
-%comentar tipos de velocidad, frames desechados, tipos de tracker que se pueden usar
+The Tracker module is the core of the project and therefore it is going to be explained more in deep.\\
+As previously commented, the Tracker receives an input detection coming from the Network module and performs the multiobject tracking over a buffer of variable size following a tracking by detection scheme. With this hybrid tracker we pretend to show the advantages of the tracking by detection over a pure neural network tracking or a classic feature tracking.\\
+%ToDo: comentar tipos de velocidad, frames desechados
+The tracking will be performed using already built tracking implementations in two libraries: OpenCV and dlib. This will also allow for a good comparative between them that can lead us to select the preferred option for the tracking algorithm. In the next subsection, the tested tracker implementations are discussed.
+\subsection{OpenCV tracking}
+OpenCV is known for the great variety of algorithms for which it provides implemented solutions, one of them is tracking. This libraries are included in the OpenCV extra modules (\texttt{opencv contrib}) and may not be available directly depending on the OpenCV installation done.\\
+The tested trackers include \textit{BOOSTING, MIL, MEDIANFLOW, TLD, KCF, MOSSE} and \textit{CSRT} (in release order). There are other trackers implemented such as GOTURN.\\ The GOTURN (\textit{Generic Object Tracking Using Regression Networks}) is a deep learning based tracking algorithm which learns the motion of the object in an \textit{offline} manner. Many real-time trackers rely on \textit{online} learning that is usually much faster than a deep learning based tracking solution. The authors affirm in the original paper \cite{held2016learning} that they are ``the first neural-network tracker that learns to track generic objects at 100 FPS" (using GPU acceleration, Nvidia GTX 680). However, when using only a CPU the tracker runs at 2,7 FPS according to the authors. This was the main reason to discard this tracker for the project. %ToDo: comentar tests feitos con goturn?
+\\
+The OpenCV trackers available in this project are now introduced:
+\begin{itemize}
+\item BOOSTING \cite{grabner2006real}: based on an online version of AdaBoost, the tracker is trained at runtime with positive and negative examples of the object to track. An initial bounding box needs to be provided by the user or other object detection algorithm. The classifier looks over the pixel neighborhood of a previous location to find the new location. The classifier is constantly updated with this new positives.
+\item MIL \cite{babenko2009visual}: the \textit{Multiple Instance Learning} algorithm tries to solve the problem of learning an adaptive appearance model for object tracking. To achieve this, the authors train a discriminative classifier online to separate the object to track from the background, i.e.\ positive and negative examples are extracted from the frame (Figure \ref{fig:mil}). Similarly to the Boosting algorithm, the model searches inside of the window of the old location. It obtains a probability map with most probably new location of the object and updates the tracker model.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.4]{figures/mil.png}
+\caption{Updating a discriminative appearance model: (A) using a single positive image patch. (B) using several positive image patches. (C) using one positive bag of several image patches (from \cite{babenko2009visual})}
+\label{fig:mil}
+\end{center}
+\end{figure}
+\item MEDIANFLOW \cite{kalal2010forward}: the Median Flow algorithm introduced a novel method for tracking failure detection based on the Forward-Backward error. This  basically consists of perform the tracking forward and backward in time in a given frame and measure the discrepances between trajectories (see Figure \ref{fig:medianflow}). The authors affirm that this discrepances are highly correlated with the real tracking failures.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.4]{figures/medianflow.png}
+\caption{The forward-backward error in Point 2 (from \cite{kalal2010forward})}
+\label{fig:medianflow}
+\end{center}
+\end{figure}    
+\item TLD \cite{kalal2011tracking}: in the original paper on which is based the implementation, the authors investigate the long-term object tracking and propose a novel framework that descompose this type of tracking into \textit{tracking, learning and detection} (TLD). The tracker based on Median Flow follows the object in every frame. The detector is composed by a patch variance module, followed by an ensemble classifier and finally a Nearest Neighbor classifier. This detector corrects the tracker if necessary. The learning step estimate the errors of the detector and updates it using a novel method called by the authors P-N learning.
+\item KCF \cite{henriques2012exploiting}: the \textit{Kernelized Correlation Filter} is a tracking framework that utilizes properties of circulant matrix to enhance the processing speed. The authors observed that the translated and scaled patches used to train discriminative classifiers contain redundancies and the resulting data matrix from this patches is circulant. With kernel regression as classification method they derive the KCF tracking.
+\item MOSSE \cite{bolme2010visual}: correlation filters can track complex objects in common tracking scenarios that may include rotations, occlusions or other distractions at high frame rates. The \textit{Minimum Output Sum of Squared Error} filter is another type of correlation filter. Filter based trackers model the appearance of objects using filters trained in example images (Figure \ref{fig:mosse}). With a given initial target in the first frame the tracking and the filter training start to work together. The idea behind MOSSE is an optimization problem, given a set of training images $f_i$ and training outputs $g_i$ MOSSE finds a filter \textit{H} that minimizes the sum of squared error between the actual output of the convolution and the desired output of the convolution (see Formula \ref{eq:conv_mosse}).
+\begin{equation}
+\min_{H^*}\sum_{i}\left|F_i \odot H^* - G_i\right|^2
+\label{eq:conv_mosse}
+\end{equation}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.35]{figures/mosse_filter.png}
+\caption{Comparison of the output peaks produced by different correlation filters (from \cite{bolme2010visual})}
+\label{fig:mosse}
+\end{center}
+\end{figure} 
+
+\item CSRT \cite{lukezic2017discriminative}: the CSRT tracker is based on the paper \textit{Discriminative Correlation Filter with Channel and Spatial Reliability}. Here the authors introduce the channel and spatial reliability concepts to DCF tracking to improve the filter update and the tracking process (Figure \ref{fig:csrt}). The spatial information is used to restrict the searching to the parts suitable for tracking. In the other hand, the channel information aims to reduce the noise of the weighted-averaged filter response.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.35]{figures/csrt.png}
+\caption{Overview of the CSR-DCF approach (from \cite{lukezic2017discriminative})}
+\label{fig:csrt}
+\end{center}
+\end{figure} 
+\end{itemize}
+
+In the next chapter, some experiments are performed to put into practice the advantages and disadvantages of each OpenCV tracker. Furthermore, the dlib tracking will also be discussed allowing for a comparison between all the proposals and allowing us to select the best tracker option.
+\subsection{dlib tracking}
+In chapter 2 the dlib library was introduced as a set of independent software components that provide different utilities, one of them is tracking. The \texttt{dlib.correlation\_tracker} is going to be used for this project. As the name indicates, it is another implementation of a correlation filter for tracking which are widely used. This tool is an implementation of the method described in \cite{danelljan2014accurate}.\\ In the proposed solution the authors are centered in solving the challenging problem of handling large scale variations in visual object tracking. They propose a solution for a robust scale estimation in a tracking by detection framework, as it is the case in this project. To do so the learning of discriminative correlation filters is based on a scale pyramid representation.
 %%%%%%%%%%%
 %comando de lanzamiento de app y screenshot de app en funcionamiento
