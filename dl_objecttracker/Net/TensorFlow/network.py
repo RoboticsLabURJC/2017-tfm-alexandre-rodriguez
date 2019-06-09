@@ -74,8 +74,7 @@ class DetectionNetwork:
                                 log_device_placement=False)
         self.sess = tf.Session(graph=detection_graph, config=config)
         self.image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-        # NCHW conversion. not possible
-        #self.image_tensor = tf.transpose(self.image_tensor, [0, 3, 1, 2])
+
         self.detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
         self.detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
         self.detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
@@ -135,11 +134,7 @@ class DetectionNetwork:
 
             fps_rate = 1.0 / (time.time() - start_time)  # fps calculation includes preprocessing and postprocessing
 
-            if self.net_has_masks: #TODO: draw masks of mask nets, use tf obj det tutorial
-                #from Net.utils import visualization_utils
-                #print('draw mask')
-                #visualization_utils.draw_mask_on_image_array(self.input_image, masks)
-                #self.display_instances(self.input_image, self.detection, masks, self.label, self.scores)
+            if self.net_has_masks:  #TODO: draw masks of mask nets, use tf obj det tutorial
                 detected_image = self.renderModifiedImage(fps_rate)
             else:
                 detected_image = self.renderModifiedImage(fps_rate)
@@ -202,92 +197,6 @@ class DetectionNetwork:
                 yaml.safe_dump(self.fps_network_results, yamlfile, explicit_start=True, default_flow_style=False)
                 self.log_done = True
             print('Log network done!')
-
-    def random_colors(self, N, bright=True):
-        """
-        Generate random colors.
-        To get visually distinct colors, generate them in HSV space then
-        convert to RGB.
-        """
-        import colorsys
-        import random
-        brightness = 1.0 if bright else 0.7
-        hsv = [(float(i) / float(N), 1, brightness) for i in range(N)]
-        colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
-        random.shuffle(colors)
-        return colors
-
-    def apply_mask(self, image, mask, color, alpha=0.5):
-        """Apply the given mask to the image.
-        """
-        for c in range(3):
-            image[:, :, c] = np.where(mask == 1,
-                                      image[:, :, c] *
-                                      (1 - alpha) + alpha * color[c] * 255,
-                                      image[:, :, c])
-        return image
-
-    def display_instances(self, image, boxes, masks, class_names,
-                          scores=None, title="",
-                          figsize=(16, 16), ax=None):  # from mask rcnn visualize.py
-        """
-        boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
-        masks: [height, width, num_instances]
-        class_ids: [num_instances]
-        class_names: list of class names of the dataset
-        scores: (optional) confidence scores for each box
-        figsize: (optional) the size of the image.
-        """
-        from skimage.measure import find_contours
-
-        # Number of instances
-        N = boxes.shape[0]
-
-        # if not N:
-        #     print("\n*** No instances to display *** \n")
-        # else:
-        #     assert boxes.shape[0] == masks.shape[-1]
-
-        # Generate random colors
-        colors = self.random_colors(N)
-        color_list = []
-        masked_image = image.astype(np.uint8).copy()
-        for i in range(N):
-            color = colors[i]
-
-            # Bounding box
-            if not np.any(boxes[i]):
-                # Skip this instance. Has no bbox. Likely lost in image cropping.
-                continue
-            y1, x1, y2, x2 = boxes[i]
-            cv2.rectangle(masked_image, (x1, y1), (x2, y2), thickness=2, lineType=8, color=(255, 255, 255))
-
-            # Label
-            score = scores[i] if scores is not None else None
-            label = class_names[i]
-            caption = "{} {:.3f}".format(label, score) if score else label
-            cv2.putText(masked_image, caption, (x1, y1 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), thickness=2,
-                        lineType=2)
-
-            # Mask
-            mask = masks[:, :, i]
-            masked_image = self.apply_mask(masked_image, mask, color)
-
-            # Mask Polygon
-            # Pad to ensure proper polygons for masks that touch image edges.
-            padded_mask = np.zeros(
-                (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
-            padded_mask[1:-1, 1:-1] = mask
-            contours = find_contours(padded_mask, 0.5)
-            edge_color = tuple([255 * x for x in color])
-            for i, verts in enumerate(contours):
-                # Subtract the padding and flip (y, x) to (x, y)
-                verts = np.fliplr(verts) - 1
-                verts = np.array(verts).reshape(-1, 1, 2).astype(np.int32)
-                cv2.drawContours(masked_image, verts, -1, edge_color)
-            color_list.append(edge_color)
-
-        return masked_image.astype(np.uint8), color_list
 
     def setInputImage(self, im, frame_number):
         ''' Sets the input image of the network. '''
