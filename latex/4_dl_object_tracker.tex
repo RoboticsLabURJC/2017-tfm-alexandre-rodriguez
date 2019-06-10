@@ -2,26 +2,43 @@
 In this chapter, the solution obtained for solving the multiobject tracking using deep learning is explained.
 
 \section{System overview}
-The main contribution of this work is to develop a tracking algorithm capable of tracking different types of objects using deep learning techniques. To achieve this task the selected tracking methodology is the tracking by detection. This method combines detections coming from an object detection neural network with tracking techniques. With this, the idea is to give the final system a balance between speed and accuracy. The detections from the neural networks are usually slower than a tracking but more accuracted whereas the trackers are often quickly obtained but slightly more inaccurated.\\
-The module architecture of the system is summarized in the diagram %ToDo: diagrama general.
+The main contribution of this work is to develop a tracking algorithm capable of tracking different types of objects using deep learning techniques. To achieve this task the selected tracking methodology is the tracking by detection. Our method combines detections coming from an object detection neural network with tracking techniques. With this, the idea is to give the final system a balance between speed and accuracy. The detections from the neural networks are usually slower than a tracking but more accuracted whereas the tracker results are often quickly obtained but they are slightly more inaccurated.\\
+The module architecture of the system is summarized in the following diagram (Figure \ref{fig:general}).
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{figures/general.png}
+\caption{dl-objecttracker module architecture}
+\label{fig:general}
+\end{center}
+\end{figure}
+
 As it can be seen the system is built in a modularized way with different threads. There are 4 threads: Camera, GUI, Network and Tracker. All of them are going to be discussed more in deep on its respective sections of the chapter but the general workflow of the system is going to be explained here.\\
-First, the camera thread provides the images or frames to the rest of the threads, i.e.\ the input to the system. The output of the system is an YML file with the results per frame. The core of the computing is divided in the Network thread and the Tracker thread. This Tracker has a buffer of frames of different size coming from the Camera to work on \textit{simulated real-time}. So, when the first frame is available it is feed to the Network thread which starts doing the inference, this is, it starts detecting objects. Meanwhile, the buffer is accumulating the incoming frames from the Camera until the detection from the Network finishes.\\
-When the detection is available the Tracker thread starts the tracking of the detected objects in the buffer of frames. The last frame in the buffer is used to feed again the Network allowing for a synchronism between the detections and the tracking in the frames in an online mode. This temporal process can be  observed more clearly in the Figure %ToDo: meter figura buffer
-\\As commented before, the buffer changes its size in every iteration but we can not allow the buffer to increase or decrease this size in an unlimited way because that will end blocking the system. If the buffer is too big, the tracking will take more time and the neural network will finish before the tracking is done. This is, the Network is underused. In the other side, if the buffer is too small, the Tracker will end its work before the inference is done in the Network and the Tracker will have to wait much more time to the Network to finish. For these reasons a balance is needed.\\
+First, the camera thread provides the images or frames to the rest of the threads, i.e.\ the input to the system. The output of the system can be provided using an YML file with the results per frame (\textit{Logger}) or using the GUI. If the GUI is configured to show the graphical interface (\textit{on}), the results are shown on screen. But if the graphical interface is not configured (\textit{off}) the results are saved in JPG files.\\ The core of the computing is divided in the Network thread and the Tracker thread. This Tracker has a buffer of frames of different size coming from the Camera to work on \textit{simulated real-time}. So, when the first frame is available it is feed to the Network thread which starts doing the inference, this is, it starts detecting objects. Meanwhile, the buffer is accumulating the incoming frames from the Camera until the detection from the Network comes.\\
+When the detection is available, the Tracker thread starts the tracking of the detected objects in the buffer of frames. The last frame in the buffer is used to feed again the Network allowing for a synchronism between the detections and the tracking in the frames in an online mode. This temporal process can be observed more clearly in the Figure \ref{fig:buffer}.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{figures/buffer.png}
+\caption{How the buffer is handled}
+\label{fig:buffer}
+\end{center}
+\end{figure}
+It can be seen that given a complete buffer in Camera of size \textit{N}, the first frame is assigned to the Network and, when this frame is processed, a buffer of size \textit{N-2} is assigned to the Tracker to be processed. The last frame of the given buffer was passed to the Network again. This iterative mechanism continues in time ensuring that no frames are lost. The application has always a delay in frames of 1 buffer (\textit{simulated real-time}).
+\\As commented before, the buffer changes its size in every iteration but we can not allow the buffer to increase or decrease this size in an uncontrolled way because that will end blocking the system. If the buffer is too big, the tracking will take more time and the neural network will finish before the tracking is done. This is, the Network is underused. In the other side, if the buffer is too small, the Tracker will end its work before the inference is done in the Network and the Tracker will have to wait much more time to the Network to finish. For these reasons a balance is needed.\\
 The neural network inference time is approximately the same time so this time is fixed. Then, the only part of this processing core where we can change is the Tracker side. The obtained solution consists of a Tracker which constantly measures its frame rate (FPS) allowing the system to slow down or speed up depending on this measurement.\\
 Once all the frames have been processed the Network and Tracker thread stop. After that, the results are logged into the YML files (a file for each frame) and the user can close the application.\\
 The general behavior of the application when running video sequences or raw frames was presented. Nevertheless, it can also handle live stream videos coming from local cameras connected. In this case, the logging of the results is not done but the tracking by detection scheme is the same.\\
-As commented in the chapter 2, the application is configurable using an YML file (\textit{objecttracker.yml}). In the next sections, the implementation of each thread of the system is explained, including the available configuration modifications.
+As commented in the chapter 2, the application is configurable using an YML file (\textit{objecttracker.yml}). In the next sections, the implementation of each thread of the system is explained, including the available configuration modifications.\\
 
 \section{Camera thread}
-The Camera module provides the input images to the rest of the system but this images can be obtained using four different sources.
+The Camera module provides the input images to the rest of the system. This images can be obtained using four different sources:
 \begin{itemize}
     \item \textbf{Local camera} (with OpenCV): the Camera can read from a local camera using the OpenCV routine \texttt{VideoCapture} indicating the device number of the camera.
-    \item \textbf{Local camera} (with ROS): the Camera can use ROS to read from the camera device. In order to do so, the user needs to launch a terminal and type \texttt{roslaunch usb\_cam.launch}. This will publish a ROS topic \texttt{/usb\_cam/image\_raw} that can be subscribed by the Camera module and it will start reading frames from the device. For more information about the launching process please refer to my wiki at \ref{using_ros}.
+    \item \textbf{Local camera} (with ROS): the Camera can use ROS to read from the camera device. In order to do so, the user needs to launch a terminal and type \texttt{roslaunch usb\_cam.launch}. This will publish a ROS topic \texttt{/usb\_cam/image\_raw} that can be subscribed by the Camera module and it will start reading frames from the device. For more information about the launching process please refer to my wiki (\ref{using_ros}).
     \item \textbf{Local video}: to read from a local video it is also used the OpenCV routine \texttt{VideoCapture} but indicating the video path.
 \item \textbf{Local images}: similarly the local images path needs to be passed to \texttt{VideoCapture}. This source is very useful because most of the datasets are provided as sequences of frames instead of videos. And it can avoid problems such as creating sequences of videos with the wrong duration or frame rate.
 \end{itemize}
 The Camera thread source and options can be modified at the configuration file. The source is selected at \texttt{ObjectTracker->Source}. After that the user needs to indicate the device number \texttt{ObjectTracker->Local->DeviceNo} if using a local camera with OpenCV, the video path \texttt{ObjectTracker->Video->Path} if using a local video or the images path \texttt{ObjectTracker->Images->Path} when using local images.\\
+The user needs to modify the \texttt{usb\_cam.launch} to change the Camera configuration when using ROS.\\
 Before being sent to other threads the image is rescaled according to the neural network input size. It continues all the process with this size. When the final results are obtained this is taken into account to rescale the coordinates of the detections or trackers with respect to the original image size.\\
 Apart from providing images the Camera thread also controls the flow of the application. This is done in this way because the application offers the option of not having GUI. In the first versions of the project the control of the application (the ``main") was implemented in the GUI thread but when the no-GUI option was added this was moved to the Camera thread.\\
 The ``main" is done in the \texttt{update} function of the Camera which is continuously called by the Camera thread. In the Figure %ToDo: figura update camera
@@ -39,15 +56,40 @@ The datasets on which the model was trained needs to be specified to assign the 
     \item Model: the model file
     \item Dataset: VOC/COCO/KITTI/OID/PET
     \item Input size: this input size can be modified depending on the selected model. Some models does not allow to change the input image size
-    \item Confidence: the confidence threshold for the detections obtained. If a detection obtains a confidence value below this value is discarded
+    \item Confidence: the confidence threshold for the detections obtained. If a detection obtains a confidence value below that detection is discarded
 \end{itemize}
 The Network thread basically receives an image (previously resized) and performs the inference. As a result it outputs the detections obtained in the image (if any) and it draws these detections in form of bounding boxes containing also the label and the confidence value.\\
-The logging of the Network results is optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. The same occurs with the results of the Tracker.
+The logging of the Network results is optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. The same occurs with the results of the Tracker. The results are logged in the \texttt{logNetwork} and \texttt{logTracker} functions respectively.
 \section{Tracker thread}
 The Tracker module is the core of the project and therefore it is going to be explained more in deep.\\
 As previously commented, the Tracker receives an input detection coming from the Network module and performs the multiobject tracking over a buffer of variable size following a tracking by detection scheme. With this hybrid tracker we pretend to show the advantages of the tracking by detection over a pure neural network tracking or a classic feature tracking.\\
-%ToDo: comentar tipos de velocidad, frames desechados
-The tracking will be performed using already built tracking implementations in two libraries: OpenCV and dlib. This will also allow for a good comparative between them that can lead us to select the preferred option for the tracking algorithm. In the next subsection, the tested tracker implementations are discussed.
+The tracker can have three posible speed status: \textit{slow, normal} and \textit{fast}. This calculation is performed using an internal buffer of FPS rates of size 3. The length selected is due to the fact that the tracker needs to respond quickly to changes in its velocity avoiding slowing down or speeding up in an excessive way. The tracker speed calculation is explained in Algorithm \ref{tracker_speed}. Three frame rate thresholds are established to distinguish between a tracker which is behaving in a normal way (defined by us) or a slower or a faster processing time. If the tracker is performing slower than normal the next three frames that needed to be tracked are discarded from the buffer in the \texttt{imageToTrack} function. In the other hand, if the tracker is going too fast it is slowed down in \texttt{getOutputImage} by waiting some frames to return the image to be output. With this mechanism the buffer does not increase or decrease too much in size allowing a more stable behavior and synchronization between the threads.
+
+\begin{algorithmic}[H]
+\begin{algorithm}
+\State \textbf{Inputs:} averageFPS, lastFPSBuffer, trackerSlow, trackerFast, counterSlow, counterFast
+\State \textbf{Output:} trackerSpeedMode
+\Procedure{trackerSpeedMode}{}
+\If {not 0 in $lastFPSBuffer$ and $averageFPS$ \textless 10}
+    \State $counterSlow$ + 1
+    \If {$counterSlow$ == 3}
+        \State $counterSlow$ = 0
+        \State $trackerSlow$ = True
+    \EndIf
+\ElsIf{not 0 in $lastFPSBuffer$ and 10 \textless $averageFPS$ \textless 25}
+    \State $trackerSlow$ = False
+    \State $trackerFast$ = False
+\ElsIf{$averageFPS$ \textgreater 25 and $counterFast$ \textless 1}
+    \State $counterFast$ + 1
+\State $trackerFast$ = True
+\EndIf  
+\EndProcedure
+\caption{Tracker speed mode}\label{tracker_speed}
+\end{algorithm}
+\end{algorithmic}
+
+
+The tracking will be performed using already built tracking implementations of two libraries: OpenCV and dlib. This will also allow for a good comparative between them that can lead us to select the preferred option for the tracking algorithm. In the next subsection, the tested tracker implementations are discussed.
 \subsection{OpenCV tracking}
 OpenCV is known for the great variety of algorithms for which it provides implemented solutions, one of them is tracking. This libraries are included in the OpenCV extra modules (\texttt{opencv contrib}) and may not be available directly depending on the OpenCV installation done.\\
 The tested trackers include \textit{BOOSTING, MIL, MEDIANFLOW, TLD, KCF, MOSSE} and \textit{CSRT} (in release order). There are other trackers implemented such as GOTURN.\\ The GOTURN (\textit{Generic Object Tracking Using Regression Networks}) is a deep learning based tracking algorithm which learns the motion of the object in an \textit{offline} manner. Many real-time trackers rely on \textit{online} learning that is usually much faster than a deep learning based tracking solution. The authors affirm in the original paper \cite{held2016learning} that they are ``the first neural-network tracker that learns to track generic objects at 100 FPS" (using GPU acceleration, Nvidia GTX 680). However, when using only a CPU the tracker runs at 2,7 FPS according to the authors. This was the main reason to discard this tracker for the project. %ToDo: comentar tests feitos con goturn?
@@ -56,7 +98,7 @@ The OpenCV trackers available in this project are now introduced:
 \begin{itemize}
 \item BOOSTING \cite{grabner2006real}: based on an online version of AdaBoost, the tracker is trained at runtime with positive and negative examples of the object to track. An initial bounding box needs to be provided by the user or other object detection algorithm. The classifier looks over the pixel neighborhood of a previous location to find the new location. The classifier is constantly updated with this new positives.
 \item MIL \cite{babenko2009visual}: the \textit{Multiple Instance Learning} algorithm tries to solve the problem of learning an adaptive appearance model for object tracking. To achieve this, the authors train a discriminative classifier online to separate the object to track from the background, i.e.\ positive and negative examples are extracted from the frame (Figure \ref{fig:mil}). Similarly to the Boosting algorithm, the model searches inside of the window of the old location. It obtains a probability map with most probably new location of the object and updates the tracker model.
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
 \includegraphics[scale=0.4]{figures/mil.png}
 \caption{Updating a discriminative appearance model: (A) using a single positive image patch. (B) using several positive image patches. (C) using one positive bag of several image patches (from \cite{babenko2009visual})}
@@ -64,7 +106,7 @@ The OpenCV trackers available in this project are now introduced:
 \end{center}
 \end{figure}
 \item MEDIANFLOW \cite{kalal2010forward}: the Median Flow algorithm introduced a novel method for tracking failure detection based on the Forward-Backward error. This  basically consists of perform the tracking forward and backward in time in a given frame and measure the discrepances between trajectories (see Figure \ref{fig:medianflow}). The authors affirm that this discrepances are highly correlated with the real tracking failures.
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
 \includegraphics[scale=0.4]{figures/medianflow.png}
 \caption{The forward-backward error in Point 2 (from \cite{kalal2010forward})}
@@ -79,7 +121,7 @@ The OpenCV trackers available in this project are now introduced:
 \label{eq:conv_mosse}
 \end{equation}
 
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
 \includegraphics[scale=0.35]{figures/mosse_filter.png}
 \caption{Comparison of the output peaks produced by different correlation filters (from \cite{bolme2010visual})}
@@ -88,7 +130,7 @@ The OpenCV trackers available in this project are now introduced:
 \end{figure} 
 
 \item CSRT \cite{lukezic2017discriminative}: the CSRT tracker is based on the paper \textit{Discriminative Correlation Filter with Channel and Spatial Reliability}. Here the authors introduce the channel and spatial reliability concepts to DCF tracking to improve the filter update and the tracking process (Figure \ref{fig:csrt}). The spatial information is used to restrict the searching to the parts suitable for tracking. In the other hand, the channel information aims to reduce the noise of the weighted-averaged filter response.
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
 \includegraphics[scale=0.35]{figures/csrt.png}
 \caption{Overview of the CSR-DCF approach (from \cite{lukezic2017discriminative})}
@@ -100,5 +142,11 @@ The OpenCV trackers available in this project are now introduced:
 In the next chapter, some experiments are performed to put into practice the advantages and disadvantages of each OpenCV tracker. Furthermore, the dlib tracking will also be discussed allowing for a comparison between all the proposals and allowing us to select the best tracker option.
 \subsection{dlib tracking}
 In chapter 2 the dlib library was introduced as a set of independent software components that provide different utilities, one of them is tracking. The \texttt{dlib.correlation\_tracker} is going to be used for this project. As the name indicates, it is another implementation of a correlation filter for tracking which are widely used. This tool is an implementation of the method described in \cite{danelljan2014accurate}.\\ In the proposed solution the authors are centered in solving the challenging problem of handling large scale variations in visual object tracking. They propose a solution for a robust scale estimation in a tracking by detection framework, as it is the case in this project. To do so the learning of discriminative correlation filters is based on a scale pyramid representation.
-%%%%%%%%%%%
-%comando de lanzamiento de app y screenshot de app en funcionamiento
+
+\section{How to launch the dl-objecttracker}
+All the modules that form the component have been presented, the application can be put into operation. After modifying the configuration accordingly the application can be runned following this instructions:
+\begin{enumerate}
+    \item \textbf{Open a terminal}: open a terminal where the \textit{objecttracker.py} is located.
+    \item \textbf{Launch the dl-objecttracker}: in this terminal type\\ \texttt{python2 objecttracker.py objecttracker.yml on}
+\end{enumerate}
+The GUI can be turned on or off with the argument that comes after the configuration file (\textit{on/off}).
