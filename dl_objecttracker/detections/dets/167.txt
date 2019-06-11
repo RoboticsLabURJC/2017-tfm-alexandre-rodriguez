@@ -1,0 +1,6 @@
+stopsign 0 1473 71 1683 301
+umbrella 0 0 341 247 421
+person 0 888 -6 1256 1035
+person 0 120 379 397 879
+stopsign 0 1462 69 1676 301
+umbrella 0 0 341 240 421

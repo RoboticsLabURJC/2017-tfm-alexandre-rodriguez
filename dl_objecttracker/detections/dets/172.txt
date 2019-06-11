@@ -1,0 +1,4 @@
+umbrella 0 3 341 251 421
+person 0 768 14 1140 1058
+stopsign 0 1473 71 1683 301
+umbrella 0 -7 341 236 421
