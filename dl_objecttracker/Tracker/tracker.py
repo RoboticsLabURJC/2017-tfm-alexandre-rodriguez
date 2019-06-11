@@ -187,9 +187,18 @@ class Tracker:
                     for obj, tracker in self.trackers_opencv.items():
                         confidence_ok, bbox = tracker.update(self.image)
 
+                        # hotfix: avoid index out of bounds
+                        if obj == 0:
+                            previous_color_list = self.color_list
+                            previous_input_label = self.input_label
+                        if obj >= len(self.input_label):
+                            self.color_list = previous_color_list
+                            self.input_label = previous_input_label
+
                         if confidence_ok:
                             p1 = (int(bbox[0]), int(bbox[1]))
                             p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+
                             cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[obj]], thickness=2)
                             cv2.putText(self.image, self.input_label[obj], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
