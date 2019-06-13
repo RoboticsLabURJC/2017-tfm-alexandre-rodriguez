@@ -218,6 +218,15 @@ class Tracker:
 
                 elif self.lib == 'dlib':
                     for i, (t, l) in enumerate(zip(self.trackers_dlib, self.labels_dlib)):
+
+                        # hotfix: avoid index out of bounds
+                        if i == 0:
+                            previous_color_list = self.color_list
+                            previous_input_label = self.labels_dlib
+                        if i >= len(self.labels_dlib):
+                            self.color_list = previous_color_list
+                            self.labels_dlib = previous_input_label
+
                         # update the tracker
                         tracking_quality = t.update(self.image)
                         if tracking_quality >= 7:  # check tracking quality
@@ -228,7 +237,7 @@ class Tracker:
                             p2 = (int(pos.right()), int(pos.bottom()))
 
                             # draw the bounding box from the dlib tracker
-                            cv2.rectangle(self.image, p1, p2, self.color_list[self.input_label[i]], thickness=2)
+                            cv2.rectangle(self.image, p1, p2, self.color_list[self.labels_dlib[i]], thickness=2)
                             cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (0, 0, 0), thickness=2, lineType=2)
@@ -325,7 +334,7 @@ class Tracker:
             self.counter_slow = 0
             self.counter_fast = 0
             self.new_detection = False
-            print('Tracking done!')
+            # print('Tracking done!')
 
     def logTracking(self):
         if os.path.isfile('log_tracking.yaml') and not self.log_done:
