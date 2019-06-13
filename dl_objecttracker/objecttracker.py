@@ -143,9 +143,9 @@ if __name__ == '__main__':
 
     window = GUI()
     cam.setGUI(window)
+    cam.setLogger(logger_status)
     cam.setNetwork(network, t_network)
     cam.setTracker(tracker)
-    cam.setLogger(logger_status)
     cam.setNetworkParams(image_net_size, confidence)
 
     # Threading camera
