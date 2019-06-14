@@ -16,16 +16,16 @@ The first version of Inception, known as GoogLeNet, was the winner of the 2014 I
 With the arrival of autonomous vehicles, intelligent video surveillance, face detection and numerous emerging applications, faster and more accurate detection systems are increasingly in demand. This includes not only recognizing and classifying each object in the image but also locating it with its corresponding text{bounding box}. This makes object detection significantly more complicated than traditional image classification. However, the most successful object detection algorithms today are extensions of image classification models.\\
 The main object detection models are then introduced ~\cite{fu2017dssd}.  %cambiar: modify classification to remark difference between regionbased and singleshot
 \begin{itemize}
-\item \textbf{Faster R-CNN} ~\cite{ren2015faster}: is one of the current reference models and one of the last detectors known as  \textit{region-based} from Girshick \etal{}. This models basically work in the following way: they use some mechanism to extract regions from an image that are probably an object and then classify those proposed regions with a CNN. The father of this model is the R-CNN and it was the real driver of this type of techniques ~\cite{girshick2014rich}. In the proposed regions obtained through an algorithm called \textit{Selective Search} the characteristics are extracted through a CNN by region and then those regions are classified based on the characteristics. But its performance was slow.\\
-This performance improves with Fast R-CNN ~\cite{girshick2015fast} for two main reasons. The first is that the CNN is applied over the whole image instead of over each region and then the regions are obtained from the last map of characteristics of the network. The second is due to the introduction of a Softmax layer that simplifies classification. Its mechanism was faster and easier to train than R-CNN but there was still a bottleneck in the generation of regions.\\
-To solve it the RPN (\textit{Region Proposal Network}) is introduced and added to the Fast R-CNN it creates Faster R-CNN. The RPN returns proposed regions based on a \textit{score} that refers to the probability that the bounding box is an object, the \textit{objectness} (Figure \ref{fig:fasterrcnn}). And these regions are passed directly to the Fast R-CNN.\\
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[scale=0.25]{faster_rcnn.png}
-\caption{Region Proposal Network (RPN)}
-\label{fig:fasterrcnn}
-\end{center}
-\end{figure}
+    \item \textbf{Faster R-CNN} ~\cite{ren2015faster}: is one of the current reference models and one of the last detectors known as  \textit{region-based} from Girshick \etal{}This models basically work in the following way: they use some mechanism to extract regions from an image that are probably an object and then classify those proposed regions with a CNN. The father of this model is the R-CNN and it was the real driver of this type of techniques ~\cite{girshick2014rich}. In the proposed regions obtained through an algorithm called \textit{Selective Search} the characteristics are extracted through a CNN by region and then those regions are classified based on the characteristics. But its performance was slow.\\
+    This performance improves with Fast R-CNN ~\cite{girshick2015fast} for two main reasons. The first is that the CNN is applied over the whole image instead of over each region and then the regions are obtained from the last map of characteristics of the network. The second is due to the introduction of a Softmax layer that simplifies classification. Its mechanism was faster and easier to train than R-CNN but there was still a bottleneck in the generation of regions.\\
+    To solve it the RPN (\textit{Region Proposal Network}) is introduced and added to the Fast R-CNN it creates Faster R-CNN. The RPN returns proposed regions based on a \textit{score} that refers to the probability that the bounding box is an object, the \textit{objectness} (Figure \ref{fig:fasterrcnn}). And these regions are passed directly to the Fast R-CNN.\\
+    \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[scale=0.25]{faster_rcnn.png}
+    \caption{Region Proposal Network (RPN)}
+    \label{fig:fasterrcnn}
+    \end{center}
+    \end{figure}
 \item \textbf{Overfeat} ~\cite{sermanet2013overfeat}: winner of the ILSVRC 2013 in location and detection of objects, this work showed that training a convolutional network to simultaneously classify, locate and detect objects in images can enhance the success both in classification, detection and location. Subsequently, it has been replaced by SSD and YOLO for tasks that require better detection in real time.
 \item \textbf{R-FCN} ~\cite{dai2016r}: there are faster models than Faster R-CNN such as R-FCN, which tries to improve system speed by maximizing shared computing. %añadir algo mais
 \item \textbf{SSD} ~\cite{liu2016ssd}: it provides great speed gains over Faster R-CNN by performing the phases of generating regions of interest and subsequent classification jointly (\textit{Single Shot MultiBox Detector}). As a result you get a lot of bounding boxes which most of them are not useful. By applying the techniques \textit{non-maximum suppression} and \textit{hard-negative mining} the final detections are achieved.
@@ -62,6 +62,12 @@ Another key factor in the proper functioning of this method is the correct align
 As can be seen, all implementations of the Mask R-CNN model surpass the previous base models of the state of the art in instance segmentation.\\
 Los autores también han realizado experimentos del rendimiento de esta técnica en el dataset Cityscapes (comentado en la sección 1.3). Para las categorías \textit{persona} y \textit{coche} este dataset presenta un gran número de instancias de diferentes clases solapadas, esto hace aún más complicada la correcta segmentación de instancias. Sin embargo, Mask R-CNN mejora los mejores métodos actuales en esta tarea y se convierte en método estado del arte. %necesario?
 %------------------------------------------------------------------------
+\subsection{Deep learning frameworks in Computer Vision}
+%ToDo: rewrite
+Apart from these frameworks, there are other well-known ones by the deep learning community. For example, \textit{Caffe} and \textit{PyTorch}.\\
+Caffe\footnote {\href{https://caffe.berkeleyvision.org/}{Caffe}} (Convolutional Architecture for Fast Feature Embedding) was originally developed by the University of California (Berkeley). It supports many different types of deep learning architectures orientated towards image classification and image segmentation. It is written in C++ and provides a Python interface. It is quite common to see this type of architecture in terms of programming languages. Due to the speed of C++ compared to Python it is commonly used for deployment whereas Python is often used for quick prototyping because of its user-friendly nature.\\
+PyTorch\footnote {\href{https://pytorch.org/}{PyTorch}} is a machine learning library created originally by the Facebook AI research group for the Python programming language. Recently, it has been gaining importance in the ``frameworks' battle". This is mainly due to its tensor computing functionality (similar to \textit{NumPy}) that makes the programming easier.
+
 \section{Datasets in Computer Vision}
 The datasets used when implementing or testing a certain system are key, since they influence the performance that the system can achieve. They also allow for a comparison of the solution found with respect to others that are part of the State of the Art in the task that is carried out, since they are usually associated with some type of competition. Therefore, it is necessary to correctly choose the dataset or datasets used in a computer vision problem. Here are some of the most well-known datasets used in many applications in the computer vision field:
 \begin{itemize}
@@ -180,4 +186,3 @@ With the arrival of neural networks this way of grouping the different tracking 
 \item \textbf{Tracking as regression}: in this group, on the other hand, the network receives only two images and directly returns the location of the object ~\cite{held2016learning}.
 \item \textbf{Tracking con RNN}: from the detection obtained this type of algorithms use \textit{Recurrent Neural Networks} to model the sequence of movement of objects thus improving the response to prolonged occlusions in time, for example ~\cite{sadeghian2017tracking}. They are the state of the art in tracking today. %revisar
 \end{itemize}
-

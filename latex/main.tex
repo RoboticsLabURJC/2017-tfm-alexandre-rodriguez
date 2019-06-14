@@ -5,7 +5,6 @@
 \usepackage{layout}
 \usepackage{emptypage}
 \usepackage{fancyhdr}
-%\usepackage[Conny]{fncychap}
 \usepackage{graphicx}
 \usepackage{subfigure} % subfiguras
 \usepackage{caption}
@@ -23,7 +22,6 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[table]{xcolor}
-%\usepackage[spanish]{babel}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{comment}
@@ -37,9 +35,7 @@
 \usepackage{float}
 \usepackage{verbatim}
 
-%\usepackage[acronym, nonumberlist]{glossaries}
-%\makeglossaries
-%\include{0-Acronimos}
+\newcommand{\etal}{\textit{et al}. }
 
 \makeatletter
 \renewcommand{\@makeschapterhead}[1]{%
@@ -99,10 +95,8 @@
 
 
 %%%%%%%%%%%%%%% Resumen %%%%%%%%%%%%%%%%%%%%
-\include{0-Abstract}
+\input{0_abstract.tex}
 
-
-\include{0-Resumen}
 
 %%%%%%%%%%%%%%% Índices %%%%%%%%%%%%%%%%%%%%
 \renewcommand{\tablename}{Tabla}
@@ -116,13 +110,6 @@
 \cleardoublepage % Índice de tablas
 \addcontentsline{toc}{chapter}{List of Tables}
 \listoftables 
-
-
-%%%%%%%%%%%%%%% Acronimos %%%%%%%%%%%%%%%%%%%%
-%\renewcommand{\acronymname}{Acronyms}
-%\cleardoublepage
-%\addcontentsline{toc}{chapter}{Acronyms}
-%\printglossary[type=\acronymtype]
 
 \cleardoublepage
 %%%%%%%%%%%%%%% Capítulos %%%%%%%%%%%%%%%%%%
@@ -139,13 +126,13 @@
 \lhead[]{CHAPTER \thechapter. Software infraestructure}
 \input{3_software_infraestructure.tex}
 
-\lhead[]{CHAPTER \thechapter. dl-objecttracker}
+\lhead[]{CHAPTER \thechapter. Multiobject tracking using deep learning and tracking by detection}
 \input{4_dl_object_tracker.tex}
 
-\lhead[]{CHAPTER \thechapter. Experiments and results}
+\lhead[]{CHAPTER \thechapter. Experiments}
 \input{5_experiments_and_results.tex}
 
-\lhead[]{CHAPTER \thechapter. Summary and conclusions}
+\lhead[]{CHAPTER \thechapter. Conclusions}
 \input{6_summary_and_conclusions.tex}
 
 \lhead[]{BIBLIOGRAPHY}
