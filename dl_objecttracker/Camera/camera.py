@@ -202,6 +202,8 @@ class Camera:
         ''' Main function: controls the flow of the application. '''
         if self.cam:
             self.im = self.getImage()
+        else:
+            raise SystemExit('Camera module not working. Exiting...')
 
         if self.im is not None or len(self.buffer) > 0:
 
