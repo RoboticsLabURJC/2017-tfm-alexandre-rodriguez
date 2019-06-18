@@ -54,7 +54,7 @@ Recently, Mask R-CNN~\cite{he2017mask} arose to solve many of these problems and
 Conceptually, Mask R-CNN adds a third stage to Faster R-CNN in which it obtains the mask of the object. The first stage of RPN coincides with that of Faster R-CNN while in the second stage it calculates, in parallel with the prediction of the class and the bounding box, a binary mask for each region of interest (\textit{RoI}). The generation of masks for each class is done without the classes competing with each other, which allows to separate the mask and class predictions from the object prediction. According to the authors, this proves to be the key to obtain good results in the final segmentation.\\ 
 Another key factor in the proper functioning of this method is the correct alignment between the RoI and the extracted characteristics. This is usually done using \textit{RoIPool} in Fast R-CNN but introduces misalignments if the purpose is to segment rather than classify. This is why Mask R-CNN authors create \textit{RoIAlign}. To demonstrate the generality of the proposed method the authors introduce the mask prediction branch on several existing neural network architectures such as Faster R-CNN with ResNet as feature extractor, for example, and manage to surpass the winners of the 2015 and 2016 COCO Challenge segmentation, MNC ~\cite{dai2016instance} and FCIS ~\cite{li2016fully}. These experiments use COCO standard metrics.\\
 %------------------------------------------------------------------------
-\subsection{Deep learning frameworks}
+\section{Deep learning frameworks}
 For the use of Deep Learning numerous \textit{frameworks} have emerged. A deep learning framework allows us to build deep learning models more easily and quickly, without getting into all the details of the underlying algorithms. Here are the frameworks used in this project:
 \begin{itemize}
 \item \textbf{Tensorflow}\footnote {\href{https://www.tensorflow.org/}{Tensorflow}}: developed by Google it offers a low-level API that allows complete control over model designs and also a more simplified high-level API with limited functionality. For debugging purposes, it provides the Tensorboard tool which allows for the visualization of the model training, among others. The Tensorflow version used in this project is 1.12.0.
@@ -88,7 +88,7 @@ As many other datasets it is associated with a challenge, the \textit{MOTChallen
 The first release of the dataset named \textit{MOT15} was focused on multiple people tracking, following the tendence of other datasets. The pedestrian tracking is by far the most studied case in the tracking context. In the next releases, more significant classes generally seen in urban scenarios were added like vehicles, bicycles or motorbikes. The challenge has had three editions: \textit{MOT15, MOT16, MOT17}. In each of them the sequences were more challenging than the edition before. This can include different camera viewpoints and positions, more challenging weather conditions (cloudy, night, sunny). For example, the mean crowd density in MOT16 is three times higher when compared to the first benchmark release (MOT15).
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.3]{mot16.png}
+\includegraphics[scale=0.4]{mot16.png}
 \caption{An overview of the MOT16 dataset. Top: Training sequences; bottom: test sequences ~\cite{milan2016mot16}}
 \label{fig:mot}
 \end{center}
