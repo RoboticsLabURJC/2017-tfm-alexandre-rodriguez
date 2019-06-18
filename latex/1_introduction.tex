@@ -38,7 +38,18 @@ Given the broad areas of application where deep learning is succeeding and the o
 \end{center}
 \end{figure}
 The deep learning for tracking has been used in previous works from other colleagues such as Marcos\footnote{\href{https://gsyc.urjc.es/jmplaza/students/tfm-visualtracking-marcos_pieras-2017.pdf}{Visual people tracking with deep learning
-detection and feature tracking}}. In his work, the task is a visual tracking on people using deep learning with a classical feature tracking based on the Lucas-Kanade algorithm. The detections obtained by the neural networks allow to build a robust hybrid tracker. However, this detections are precalculated before launching the tracking.
+detection and feature tracking}}. In his work, the task is a visual tracking on people using deep learning with a classical feature tracking based on the Lucas-Kanade algorithm. The detections obtained by the neural networks allow to build a robust hybrid tracker. However, this detections are precalculated before launching the tracking.\\
+Other interesting works with neural networks, in this case, for object detection have been developed such as \textit{Object Detector}\footnote {\label{object_detector}\href{https://github.com/JdeRobot/dl-objectdetector}{Object Detector}}.
+This application is composed of 3 entities working with an asynchronous design as threads. The entities are a \textit{Camera} that provides the images, a \textit{GUI} that provides the user interface and a \textit{DetectionNetwork} that encapsulates an object detector neural network. As a result this node allows the user to visualize object detections, i.e.\ bounding boxes drawn over the image in real-time. The images can be obtained from different sources as a webcam, a video or via remote proxy. It also provides functionality to perform on-demand detection when preferred. The Figure \ref{fig:object_detector} shows the Object Detector running.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.25]{figures/object_detector.png}
+\caption{Example of the Object Detector node working in real-time (from \ref{object_detector})}
+\label{fig:object_detector}
+\end{center}
+\end{figure}
+The user can download pre-trained open neural network models for \textit{Tensorflow} or \textit{Keras} and configure the Object Detector to work with them.\\
+As it has been seen, the deep learning and the multiobject tracking are still open areas where multiple applications can be obtained.\\
 \section{Objectives}
 After the introduction of the context of the work has been made, in this section we will explain the main objectives of this thesis and the methodology used to fulfil them.
 \\
