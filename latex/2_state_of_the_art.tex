@@ -46,7 +46,7 @@ Driven by the effectiveness of the R-CNN family many of the methods proposed for
 Recently, Mask R-CNN~\cite{he2017mask} arose to solve many of these problems and it has situated itself as a state-of-the-art technique in segmentation of instances (see Figure \ref{fig:fcis_mask})\\
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.35]{fcis_vs_maskrcnn.png}
+\includegraphics[scale=0.35]{previous_version/fcis_vs_maskrcnn.png}
 \caption{Results obtained by FCIS and Mask R-CNN in test images in COCO Dataset (from \cite{he2017mask})}
 \label{fig:fcis_mask}
 \end{center}
@@ -67,7 +67,7 @@ PyTorch\footnote {\href{https://pytorch.org/}{PyTorch}} is a machine learning li
 \section{Datasets in Computer Vision}
 The datasets used when implementing or testing a certain system are key, since they influence the performance that the system can achieve. They also allow for a comparison of the solution found with respect to others that are part of the State of the Art in the task that is carried out, since they are usually associated with some type of competition. Therefore, it is necessary to correctly choose the dataset or datasets used in a computer vision problem. Here are some of the most well-known datasets used in many applications in the computer vision field:
 \begin{itemize}
-\item \textbf{COCO (Common Objects in Context)}\footnote {\href{http://cocodataset.org/#home}{COCO Dataset}}: it is a large scale dataset for detection and segmentation of objects mainly. It contains 80 categories of objects and 330000 images of which more than 200000 are labeled. It is a dataset widely used between the community and in congresses such as the ICCV (International Conference on Computer Vision).
+\item \textbf{COCO (Common Objects in Context)}\footnote{\href{http://cocodataset.org/#home}{COCO Dataset}}: it is a large scale dataset for detection and segmentation of objects mainly. It contains 80 categories of objects and 330000 images of which more than 200000 are labeled. It is a dataset widely used between the community and in congresses such as the ICCV (International Conference on Computer Vision).
 \item \textbf{PASCAL VOC}\footnote {\href{http://host.robots.ox.ac.uk/pascal/VOC/}{PascalVOC Dataset}}: this dataset is linked with another challenge, the Pascal VOC Challenges. They ran this competition from 2005 to 2012. This project provides standardised image datasets for object class recognition, segmentation or action classification tasks.
 \item \textbf{ImageNet}\footnote {\href{http://www.image-net.org/}{ImageNet Dataset}}: it consists of 14 million images approximately and an average of 500 images per category. It organizes the well-known ILSVRC competition (ImageNet Large Scale Visual Recognition Challenge) of location and detection of objects in images and videos. It is one of the reference datasets in this area.
 \item \textbf{KITTI}\footnote {\href{http://www.cvlibs.net/datasets/kitti/}{KITTI Dataset}}: centered in the autonomous driving field, this vision benchmark suite introduces itself as a novel challenging real-world computer vision benchmark. The main areas of interest include 3D/2D object detection, 3D tracking or stereo vision. The type of objects for object detection available are focused in the ADAS field such as car, van, truck, pedestrian or cyclist.
@@ -88,7 +88,7 @@ As many other datasets it is associated with a challenge, the \textit{MOTChallen
 The first release of the dataset named \textit{MOT15} was focused on multiple people tracking, following the tendence of other datasets. The pedestrian tracking is by far the most studied case in the tracking context. In the next releases, more significant classes generally seen in urban scenarios were added like vehicles, bicycles or motorbikes. The challenge has had three editions: \textit{MOT15, MOT16, MOT17}. In each of them the sequences were more challenging than the edition before. This can include different camera viewpoints and positions, more challenging weather conditions (cloudy, night, sunny). For example, the mean crowd density in MOT16 is three times higher when compared to the first benchmark release (MOT15).
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.4]{mot16.png}
+\includegraphics[scale=0.4]{previous_version/mot16.png}
 \caption{An overview of the MOT16 dataset. Top: Training sequences; bottom: test sequences ~\cite{milan2016mot16}}
 \label{fig:mot}
 \end{center}
@@ -99,7 +99,7 @@ The Amsterdam Library of Ordinary Videos for tracking is another well-known visu
 The CAVIAR project (Context Aware Vision using Image-based Active Recognition) from INRIA labs was dedicated to the development of algorithms that can describe and understand video scenes. The scenes were associated with surveillance scenarios where people performed some different activities related with the surveillance area. Those activities included \textit{walking}, \textit{browsing}, \textit{resting}, \textit{leaving bags behind} or \textit{two people fighting}. The annotations contain, apart from the bounding boxes locations, the head and feet positions, the body direction, among others. Refering to the tracking task, the challenging problems include occlusions, appearance/disappearance, appearance changing or similar object tracking, for example. In terms of data size, the first set contains 28 video sequences and the second set contains 44 video sequences (Figure \ref{fig:caviar}). It is a well-known dataset and is commonly used for development and testing of tracking algorithms.
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.3]{caviar.png}
+\includegraphics[scale=0.3]{previous_version/caviar.png}
 \caption{CAVIAR: From  left  to right, two frames (ground truth superposed) from sequences of datasets 1 (entrance lobby of INRIA Labs) and 2 (hallway of a shopping center) ~\cite{dubuisson2016survey}}
 \label{fig:caviar}
 \end{center}
@@ -108,7 +108,7 @@ The CAVIAR project (Context Aware Vision using Image-based Active Recognition) f
 Similarly to CAVIAR dataset, the BEHAVE Interactions Test Case Scenarios dataset contains various video sequences with different scenarios where people perform different interactions among which are \textit{walk together}, \textit{meet} or \textit{split} (Figure \ref{fig:behave}). The annotations include labels in case of interactions. Proposed for behavior analysis of interacing groups, this dataset was also used to validate visual for other purposes like the validation of visual tracking algorithms that consider occlusions or fast and varying motion of objects.
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.38]{behave.png}
+\includegraphics[scale=0.38]{previous_version/behave.png}
 \caption{BEHAVE: Two snapshots of sequences, with the ground truth bounding boxes of the objects to track \cite{dubuisson2016survey}}
 \label{fig:behave}
 \end{center}
@@ -117,7 +117,7 @@ Similarly to CAVIAR dataset, the BEHAVE Interactions Test Case Scenarios dataset
 The International Workshop on Performance Evaluation of Tracking and Surveillance organizes a visual tracking competition with different objectives on every edition starting from 2000. In 2013\footnote {\href{http://www.cvg.reading.ac.uk/PETS2013/index.html}{PETS 2013}}, two of the objectives were the tracking and counting of people in crowds to estimate the density, and detecting events by crowd analysis. As BEHAVE or CAVIAR, PETS datasets are very popular among the computer vision community. The latest PETS edition took place in 2017\footnote {\href{http://openaccess.thecvf.com/content_cvpr_2017_workshops/w34/papers/Patino_PETS_2017_Dataset_CVPR_2017_paper.pdf}{PETS 2017}} and continued the evaluation theme of on-board surveillance systems for protection of mobile critical assets started in PETS 2016 \cite{patino2016pets}. On this edition, the dataset included sequences that adressed the protection of trucks (Figure \ref{fig:pets}) or vessels at sea, among others.
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.27]{pets2016.png}
+\includegraphics[scale=0.27]{previous_version/pets2016.png}
 \caption{PETS 2016: A group of people detected and tracked walking by the Truck \cite{patino2016pets}}
 \label{fig:pets}
 \end{center}
@@ -126,7 +126,7 @@ The International Workshop on Performance Evaluation of Tracking and Surveillanc
 Most of the commented datasets are limited by its small size. Even more if they are going to be used by data-hungry trackers based on deep-learning. Currently, this trackers rely on object detection datasets due to the lack of dedicated large-scale tracking datasets. For this reason the authors created TrackingNet, the first large-scale dataset and benchmark for object tracking in the wild. TrackingNet provides a total of 30643 video segments with more than 14 million dense bounding box annotations (Figure \ref{fig:trackingnet}). The contributions of this work include different techniques to generate dense annotations from coarse ones and an extended baseline for state-of-the-art trackers benchmarked on TrackingNet. Referring to the latter, the authors affirm that pretraining deep models on this dataset can improve their performance on other datasets by increasing their metrics by up to 1.7\%.
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.3]{trackingnet.png}
+\includegraphics[scale=0.3]{previous_version/trackingnet.png}
 \caption{TrackingNet: Comparison of current datasets for object tracking \cite{muller2018trackingnet}}
 \label{fig:trackingnet}
 \end{center}
@@ -137,7 +137,7 @@ Most of the commented datasets are limited by its small size. Even more if they 
 As it was said before, for a comprehensive performance evaluation it is critical to collect a representative dataset. There exist several datasets for visual tracking in surveillance escenarios but often the target objects are humans or cars of small size with a static background. Also, some of the scenes are sometimes not annotated with bounding boxes which makes them not very useful for the comparison of tracking algorithms. To facilitate the evaluation task the authors built a tracking dataset with 50 fully annotated sequences in the first release \textit{OTB50}. Later, the dataset was extended with another 50 sequences (\textit{OTB100}).\\ Many factors can affect the tracking performance such as illumination variation or occlussion, for this reason the authors categorized the sequences with 11 attributes according to the occurrence of any of the selected factors (Figure \ref{fig:otb}).\\
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.3]{otb_attributes.png}
+\includegraphics[scale=0.3]{previous_version/otb_attributes.png}
 \caption{OTB: List of the attributes annotated to test sequences ~\cite{wu2013online}}
 \label{fig:otb}
 \end{center}
@@ -146,9 +146,9 @@ Apart from the data side, the authors also integrated most of the publicly avail
 \item \textbf{VOT} \cite{kristan2017visual}\\
 The Visual Object Tracking initiative was started in 2013 to address performance evaluation of short-term visual object trackers. The short-term tracking means that trackers are assumed to not be capable of performing successful re-detection after the target is lost and they are therefore reset after such event. In all the previous editions the challenge considers single-camera, single-target, model-free\footnote{The only training information provided is the bounding box in the first frame}, causal trackers\footnote{The tracker does not use any future frames, or frames prior to re-initialization, to infer the object position in the current frame}, applied to short-term tracking. The main goal of VOT is establishing datasets, evaluation measures and toolkits for visual object tracking (as many other initiatives). The successive editions were made in conjunction with Computer Vision Conferences like ICCV or ECCV. In 2015, a subchallenge focussed on tracking in thermal infrared (\textit{TIR}) was made due to the growing interest in this kind of imaging. The 7th Visual Object Tracking Challenge VOT2019 workshop will be held in conjunction with the ICCV2019. With respect to the previous edition in 2018, this challenge edition introduces the evaluation of trackers that use 4 channels (\textit{RGB-IR} and \textit{RGB-depth}).\\
 Referring to the data itself, the VOT datasets try to pay more attention to the diversity of the data and the quality of the content and annotation with respect to the quantity. For example, some datasets assign a global attribute to the entire sequence when it is happenning in a fragment of it. VOT dataset tries to avoid the assumption that the quality of the data is correlated with its size. The VOT Challenge has focused on developing a methodology for automatic construction and annotation of moderately large datasets from a  large pool of sequences (Figure \ref{fig:vot}). For example, they use sequences from datasets such as the OTB dataset.
-\begin{figure}[h!]
+\begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.3]{vot.png}
+\includegraphics[scale=0.3]{previous_version/vot.png}
 \caption{VOT: Images from the VOT2016 sequences (left column) that were replaced by new sequences in VOT2017 (right column) ~\cite{kristan2017visual}}
 \label{fig:vot}
 \end{center}
@@ -157,8 +157,6 @@ Referring to the data itself, the VOT datasets try to pay more attention to the 
 Visual object tracking algorithms have been usually evaluated at the canonical frame rate of 30 frames per second (\textit{FPS}) but consumer devices with cameras such as smartphones, tablets or drones are increasingly coming with higher frame rates. This can take time for the visual object track community to adapt to what \textit{real time} means in terms of how faster frame rates affect the choice of a tracking algorithm. The authors introduce Need for Speed (\textit{NfS}) as the first higher frame rate video dataset and benchmark for visual object tracking. The dataset consists of 100 videos captured with 240 FPS cameras from real world scenarios. The frames are annotated with bounding boxes and the sequences are manually labelled with nine visual attributes (occlusion, fast motion, etc.). The work also provide a ranking of many recent state-of-the-art trackers according to their tracking accuracy and real-time performance. One interesting conclusion the authors obtained is that at higher frame rates, simple trackers such as correlation filters outperform complex methods based on deep learning. This must be important when making the choice of a tracking algorithm in practical applications. It needs to be a tradeoff between the resources (available bandwidth, computation hardware, etc.) and the required application accuracy.
 \end{itemize}
 
-\subsection{Metrics}
-%-------------------------------------------------------------------------
 \subsection{Previous work on tracking}
 Once the data on which the tracking algorithms can be built and the available metrics for evaluate them have been introduced it is necessary to start talking about the previous work made in tracking. Therefore, in this section we will talk about object tracking methods.\\
 In the field of computer vision there is a wide variety of study areas, one of the most important is the so-called \textit{object tracking}. Its main objective is to estimate the state of the object (\textit{target}) over time in a series of sequences of images (\textit{frames}). This state can be defined by different characteristics such as shape, appearance, position or speed.\\
@@ -179,3 +177,24 @@ With the arrival of neural networks this way of grouping the different tracking 
 \item \textbf{Tracking as regression}: in this group, on the other hand, the network receives only two images and directly returns the location of the object~\cite{held2016learning}.
 \item \textbf{Tracking with RNN}: this type of algorithms use \textit{Recurrent Neural Networks} to model the sequence of movement of objects from the detection obtained. Thus improving the response to prolonged occlusions in time, for example ~\cite{sadeghian2017tracking}. They are the state of the art in tracking nowadays.
 \end{itemize}
+\section{Metrics}
+Apart from the datasets and algorithms used to solve a given task or problem it is necessary to use a measure or measurements that can provide a evaluation of the performance of the solution obtained. In this section, the most important metrics used for object detection and multiobject tracking evaluation are commented.
+\subsection{Metrics for the evaluation of object detection algorithms}
+Before going deeper with the most common metrics in the evaluation of object detection, the basic concepts need to be mentioned. When talking about object detection, the following definitions usually appear:
+\begin{itemize}
+    \item \textbf{Intersection over Union (IoU)}: also known as Jaccard index, this measure evaluates the overlap between two bounding boxes, a predicted bounding box and the ground truth bounding box. With this definition a prediction can be classified into valid (TP) or invalid (FP). See Figure \ref{fig:iou}.
+    \item \textbf{True Positive (TP)}: is a correct detection. The condition is that the IoU must be above or equal to a given threshold. This threshold is usually defined in percentage to 50\%, 75\% or 95\%. The results obtained by a system with these three thresholds can define its behavior. For example, a given object detector can easily have good results at a 0,5 IoU but not so easily at a 0,95 IoU.
+    \item \textbf{False Positive (FP)}: is a false detection. The IOU of the detection must be below the threshold.
+    \item \textbf{False Negative (FN)}: is a detection not detected.
+    \item \textbf{True Negative (TN)}: it is not important but it is defined as all the possible bounding boxes that were correctly not detected. It is not used in metrics.
+\end{itemize}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.45]{figures/iou.png}
+\caption{IoU definition} %\ToDo: incluir fuente de imagen
+\label{fig:iou}
+\end{center}
+\end{figure}
+It is very common to see that the metrics are established by a given challenge or associated with it. It is the case of the Pascal VOC challenge that uses the \textit{precision/recall curve} and the \textit{average precision}.\\
+
+\subsection{Metrics for the evaluation of multiobject tracking algorithms}
