@@ -57,7 +57,7 @@ The GUI module provides the interface with the user and, as commented before, is
 The graphical interface has four windows and two buttons. The top-left window shows the input frames in real-time while the top-right one shows the final results. The intermediate results obtained from the Network and the Tracker will be provided at the bottom. The application with GUI has two modes with its respective buttons: ``run continuous" and ``run now". In the first one, the application runs continuously until it finishes the process (the process finishes depending on the image source). In the second one, the user can push the \textit{Run now} button to make the Network detect on the current frame and continue the tracking from that frame towards.
 \section{Neural Network} 
 The Network module is tasked with the accurated detections in the images which are feeding the Tracker on every iteration. The \textit{dl-objectdetector} component was chosen as the base object detector. It was modified to adapt it to the particularities of our \textit{dl-objecttracker}.\\
-The module supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}}. The successfully tried detectors include SSD and R-CNN detectors such as Mask R-CNN (Inception v2) or SSD (Mobilenet v2). The Keras models are limited to SSD architectures of input size 300x300 or 512x512.\\
+The module supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}}. The successfully tried detectors include SSD and R-CNN detectors such as Mask R-CNN (Inception v2) or SSD (Mobilenet v2). The Keras models are limited to SSD architectures of input size 300x300 or 512x512. The Keras models can be obtained from this set\footnote{\href {https://github.com/pierluigiferrari/ssd_keras#download-the-original-trained-model-weights}{Keras models}}.\\
 The datasets on which the model was trained needs to be specified to assign the labels to the objects. The supported labels include the VOC, COCO, KITTI, OID and PET datasets. As it ocurred with the Camera module the Network module has configurable options available in \textit{objecttracker.yml}:
 \begin{itemize}
     \item Framework: Keras or Tensorflow
@@ -68,6 +68,12 @@ The datasets on which the model was trained needs to be specified to assign the 
 \end{itemize}
 The Network thread basically receives an image (previously resized) and performs the inference. As a result it outputs the detections obtained in the image (if any) and it draws these detections in form of bounding boxes containing also the label and the confidence value.\\
 The logging of the Network results is optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. The same occurs with the results of the Tracker. The results are logged in the \texttt{logNetwork} and \texttt{logTracker} functions respectively.
+\subsection{Mask R-CNN InceptionV2}
+\subsection{SSD MobileNetV2}
+\subsection{Faster R-CNN InceptionV2}
+\subsection{SSD VGG}
+%ToDo: comentar que hay varios modelos con distintos datasets
+
 \section{Tracker}
 The Tracker module is the core of the project and therefore it is going to be explained more in deep.\\
 As previously commented, the Tracker receives an input detection coming from the Network module and performs the multiobject tracking over a buffer of variable size following a tracking by detection scheme. With this hybrid tracker we pretend to show the advantages of the tracking by detection over a pure neural network tracking or a classic feature tracking.\\
