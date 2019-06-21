@@ -13,10 +13,16 @@ The ROS version used is provided by the JdeRobot environment (version 5.6.7).\\
 JdeRobot\footnote {\href{https://jderobot.org/Main_Page}{JdeRobot}} is an opensource toolkit which facilitates the development in the fields of robotics and computer vision. Mainly written in the C++ programming language it provides a programming environment based on distributed components which can work together in an asynchronous and concurrent way to build applications.
 
 \section{Deep learning frameworks}
-%ToDo: aqui meter frameworks usados algo mais en profundidade respecto cap2
+This project makes use of the deep learning potential for the object detection task and, for this reason, deep learning frameworks are needed. In particular, the following will be used: \textit{Tensorflow} and \textit{Keras}.\\
+The Tensorflow version used in this project is 1.12.0. and the Keras version running is 2.1.1.
 
 \section{dlib}
 Written in C++, dlib is a general purpose cross-platform library that follows the idea of component-based software engineering, i.e.\ a set of independent software components. This toolkit contains machine learning algorithms and tools to solve real world problems in domains including robotics, embedded devices or mobile phones. In this project, the dlib library is used to perform object tracking. The version used is the 19.17.0.
+
+\section{Object Detection Metrics}
+To obtain the results or statistics from the project the \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{Object-Detection-Metrics} tool has been used. This tool written in Python by Rafael Padilla (thanks for sharing) provides the metrics used in the Pascal VOC object detection challenge: Precision x Recall curve and Average Precision.\\
+It offers a simple format to work with results from an object detection application. In this case, it was used to obtain results from a object tracking application. Apart from the metrics it has also options to control the IoU threshold or the bounding boxes format, among others.\\
+For installation and how-to-use instructions please refer to his \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{\textit{GitHub repository}}.
 \section{Other Python libraries}
 Apart from the commented libraries and tools used for the project the following two need to be mentioned.
 \begin{itemize}
