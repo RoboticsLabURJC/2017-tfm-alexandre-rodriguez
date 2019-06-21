@@ -77,7 +77,7 @@ The datasets used when implementing or testing a certain system are key, since t
 There are many other datasets such as those from research centers like INRIA, MIT or Caltech that contribute to the continuous improvement of the computer vision tasks.
 \section{Object tracking}
 \subsection{Datasets}
-Apart from these it is necessary to talk about the datasets that are focused on the core part of this work, i.e. \textit{the visual object tracking}. The visual object tracking is a fundamental task in computer vision which has importance in many applications such as surveillance, autonomous vehicle or video analysis. This task, the same way as others in the field needs datasets from which create and evaluate the algorithms. The datasets used are also commonly associated with competitions that allow the benchmarking of the developed algorithms. This benchmarks often provide the most objective measure of performance and, for this reason, they are important guides for research in the area of study.
+Apart from these it is necessary to talk about the datasets that are focused on the core part of this work, i.e.\ \textit{the visual object tracking}. The visual object tracking is a fundamental task in computer vision which has importance in many applications such as surveillance, autonomous vehicle or video analysis. This task, the same way as others in the field needs datasets from which create and evaluate the algorithms. The datasets used are also commonly associated with competitions that allow the benchmarking of the developed algorithms. This benchmarks often provide the most objective measure of performance and, for this reason, they are important guides for research in the area of study.
 
 The visual tracking datasets are going to be divided according to their tracking target, that is, if they are focused on the tracking of a single object (SOT) or on the tracking of multiple objects (MOT).
 \subsubsection{Multiple object tracking datasets}
@@ -190,11 +190,73 @@ Before going deeper with the most common metrics in the evaluation of object det
 \end{itemize}
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.45]{figures/iou.png}
-\caption{IoU definition} %\ToDo: incluir fuente de imagen
+\includegraphics[scale=0.5]{figures/iou.png}
+\caption{IoU definition (from \href{https://github.com/rafaelpadilla/Object-Detection-Metrics#intersection-over-union-iou}{link})}
 \label{fig:iou}
 \end{center}
 \end{figure}
 It is very common to see that the metrics are established by a given challenge or associated with it. It is the case of the Pascal VOC challenge that uses the \textit{precision/recall curve} and the \textit{average precision}.\\
+\begin{itemize}
+    \item \textbf{Precision}: is the proportion of correct positive predictions.
+    \begin{equation}
+        Precision = \frac{TP}{TP + FP}
+    \end{equation}
+    \item \textbf{Recall}: is the proportion of positive predictions with respect to all positives.
+    \begin{equation}
+        Recall = \frac{TP}{TP + FN}
+    \end{equation}
+    \item \textbf{Precision/Recall curve}: this curve plots the performance of an object detector as the confidence is changed for each object class. A good precision/recall curve has a high precision while recall increases, i.e.\ if the confidence threshold varies, the precision and recall stay high.
+    \item \textbf{Average precision (AP)}: the AP summarizes the shape of the previous curve allowing to obtain the \textit{Area Under the Curve (AUC)}. This is done because of the nature of the precision/recall curve in form of ``zigzags"  that does not permit an easy comparative between different curves (detectors). This numeric metric is the precision averaged across all recall values between 0 and 1.\\ 
+    \begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.6]{figures/auc.png}
+    \caption{AUC example: the areas from the trapezoids are 0,335, 0,15875 and 0,1375 respectively, giving an AUC score of 0,63125 (from \href{https://classeval.wordpress.com/introduction/introduction-to-the-precision-recall-plot/}{link})}
+    \end{center}
+    \end{figure}
+    This average can be done in two main ways: 11-point interpolation or interpolating all points.
+    \begin{itemize}
+        \item \textbf{11-point interpolation}: is defined as the mean precision at a set of eleven equally-spaced recall values ranging from 0 to 1. The precision at each recall value is obtained by taking the maximum precision measured value for a method for which the corresponding recall is above \textit{r}.
+        \begin{figure}[H]
+        \begin{center}
+        \includegraphics[scale=0.7]{figures/interp1.png}\\
+        \includegraphics[scale=0.7]{figures/interp2.png}
+        \caption{11-points interpolation (from \href{https://github.com/rafaelpadilla/Object-Detection-Metrics#11-point-interpolation}{link})}
+        \end{center}
+        \end{figure}
+        \item \textbf{All points interpolation}: in this case the mean precision is done interpolating through all recall points. The precision at each level \textit{r} is obtained now taking the maximum precision which has a recall value greater or equal than \textit{r + 1}. From 2010 on, PASCAL VOC uses this method of interpolation.
+        \begin{figure}[H]
+        \begin{center}
+        \includegraphics[scale=0.7]{figures/interp3.png}\\
+        \includegraphics[scale=0.7]{figures/interp4.png}
+        \caption{All points interpolation (from \href{https://github.com/rafaelpadilla/Object-Detection-Metrics#interpolating-all-points}{link})}
+        \end{center}
+        \end{figure}
+        
+    \end{itemize}
+\end{itemize}
 
 \subsection{Metrics for the evaluation of multiobject tracking algorithms}
+For the metrics used in evaluation of multiple object tracking algorithms the classification from MOT \cite{milan2016mot16} is used as reference. As it will be seen the performance evaluation for MOT algorithms is not so straightforward as the one presented for object detection.\\
+The metrics for tracking can be classified into four subsets according to different attributes:
+\begin{itemize}
+    \item \textbf{Accuracy:} this type of metrics try to measure how accurately a tracking algorithm can track targets. From this type of metric the following two are briefly commented: \textit{IDs} \cite{yamaguchi2011you} and \textit{MOTA} \cite{bernardin2008evaluating}.\\ The IDs metric measures the ID \textit{switches}, i.e.\ given an id for an object it measures how many times the MOT algorithm changes this id.\\ The \textit{Multiple Object Tracking Accuracy} or MOTA is calculated as follows:
+    \begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.3]{figures/mota.png}
+    \caption{MOTA definition: where $m_t$ is the number of misdetections (FN), $fp_t$ is the number of false positives (FP), $mme_t$ is the number of mismatches (IDs) and $g_t$ is the sum of TP and FN (from \cite{bernardin2008evaluating})}
+    \label{fig:mota}
+    \end{center}
+    \end{figure}
+    This combination of FP rate, FN rate and mismatch rate into a single number is, as the authors indicate, ``by far the most widely accepted evaluation measure for MOT" \cite{milan2016mot16} and it gives a intuitive measure on the tracker's performance at detection and trajectory keeping independently from the precision of that detections location.
+
+    \item \textbf{Precision:} in this metrics group the key factor is the description of the precision that the tracked objects have using criteria such as bounding box overlap or distance. The most important are \textit{MOTP} \cite{bernardin2008evaluating}, \textit{TDE} \cite{kratz2010tracking} and \textit{OSPA} \cite{ristic2011metric}. MOTP, for example, uses a ratio with the distance between the ground-truth detections locations \textit{d} and the associated detected locations \textit{c}.
+    \begin{figure}[H]
+    \begin{center}
+    \includegraphics[scale=0.4]{figures/motp.png}
+    \caption{MOTP definition (from \cite{bernardin2008evaluating})}
+    \label{fig:motp}
+    \end{center}
+    \end{figure}
+    \item \textbf{Completeness:} it refers to how completely the ground truth trajectories are tracked. This set includes the results from \textit{Mostly Tracked (MT), Partly Tracked (PT), Mostly Lost (ML)} and \textit{Fragmentation (FM)} \cite{li2009learning}.
+    \item \textbf{Robustness:} this last type of metrics are linked to the recovering from occlusion. Examples of this group are \textit{Recover from Short-term occlusion (RS)} and \textit{Recover from Long-term occlusion} \cite{song2010stochastic}.
+\end{itemize}
