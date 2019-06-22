@@ -1,6 +1,6 @@
 \chapter{Software infraestructure}
 
-Before going deeper inside the software implementation made to solve the task of multiobject tracking it is necessary to introduce the software infraestructure needed to accomplish it. The name selected for the component or application built is \textit{dl-objecttracker}. This component is completely written in Python. In particular the Python version used is the 2.7.12 mainly due to the compatibility with ROS. The component needs a set of parts for its perfect operation, due to the nature of the task the majority of them are related to the fields of computer vision, machine learning, deep learning and programming. The following are the most important ones.
+Before going deeper inside the software implementation made to solve the task of multiobject tracking it is necessary to introduce the software infraestructure needed to accomplish it. The name selected for the component or application built is \textit{dl-objecttracker}. This component is completely written in Python. In particular, the Python version used is the 2.7.12 mainly due to the compatibility with ROS. The component needs a set of parts for its perfect operation which, due to the nature of the task, the majority of them are related to the fields of computer vision, machine learning, deep learning and programming. The following are the most important ones.
 
 \section{OpenCV}
 OpenCV\footnote {\href{https://opencv.org/}{OpenCV}} (Open Source Computer Vision Library) is a computer vision and machine learning software library originally developed by Intel. It was built to provide a common infraestructure for computer vision applications. OpenCV is written in optimized C and C++ and takes advantage of the IPP instructions of the Intel processors which makes it highly efficient. OpenCV is a multiplatform library with versions for GNU/Linux, Mac OS, Windows and Android.\\ It offers more than 500 functions that provide solutions for areas ranging from the object recognition to the robotic vision. It includes computer vision algorithms from both classic and recent periods (including machine learning and deep learning).\\
@@ -14,20 +14,20 @@ JdeRobot\footnote {\href{https://jderobot.org/Main_Page}{JdeRobot}} is an openso
 
 \section{Deep learning frameworks}
 This project makes use of the deep learning potential for the object detection task and, for this reason, deep learning frameworks are needed. In particular, the following will be used: \textit{Tensorflow} and \textit{Keras}.\\
-The Tensorflow version used in this project is 1.12.0. and the Keras version running is 2.1.1.
+The Tensorflow version used in this project is the 1.12.0 and the Keras version running is the 2.1.1.
 
 \section{dlib}
 Written in C++, dlib is a general purpose cross-platform library that follows the idea of component-based software engineering, i.e.\ a set of independent software components. This toolkit contains machine learning algorithms and tools to solve real world problems in domains including robotics, embedded devices or mobile phones. In this project, the dlib library is used to perform object tracking. The version used is the 19.17.0.
 
 \section{Object Detection Metrics}
-To obtain the results or statistics from the project the \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{Object-Detection-Metrics} tool has been used. This tool written in Python by Rafael Padilla (thanks for sharing) provides the metrics used in the Pascal VOC object detection challenge: Precision x Recall curve and Average Precision.\\
-It offers a simple format to work with results from an object detection application. In this case, it was used to obtain results from a object tracking application. Apart from the metrics it has also options to control the IoU threshold or the bounding boxes format, among others.\\
-For installation and how-to-use instructions please refer to his \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{\textit{GitHub repository}}.
+To obtain the results or statistics from the project the \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{\textit{Object-Detection-Metrics}} tool has been used. This tool written in Python by Rafael Padilla (thanks for sharing) provides the metrics used in the Pascal VOC object detection challenge: Precision x Recall curve and Average Precision.\\
+It offers a simple format to work with results from an object detection application. In this case, it was used to obtain results from an object tracking application. Apart from the metrics it has also options to control the IoU threshold or the bounding boxes format, among others.\\
+For installation and how-to-use instructions please refer to his \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{GitHub repository}.
 \section{Other Python libraries}
 Apart from the commented libraries and tools used for the project the following two need to be mentioned.
 \begin{itemize}
 \item \textbf{NumPy}\\
 NumPy is the fundamental Python package for scientific computing specially for working with N-dimensional arrays such as matrixes. Images are basically matrixes at the end so here comes the necessity of this package. The version used of NumPy is the 1.15.4.
 \item \textbf{PyQt}\\
-PyQt provides a Python interface to the Qt library. Qt is a group of C++ libraries and development tools which include functionality to create graphical user interfaces, networks or threads, among others. In this project PyQt is used in the \textit{GUI} module allowing the visualization of the results and the user interaction. The PyQt version used is the PyQt5.
+PyQt provides a Python interface to the Qt library. Qt is a group of C++ libraries and development tools which include functionality to create graphical user interfaces, networks or threads, among others. In this project, PyQt is used in the \textit{GUI} module allowing the visualization of the results and the user interaction. The PyQt version used is the PyQt5.
 \end{itemize}
