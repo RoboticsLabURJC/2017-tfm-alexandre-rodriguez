@@ -1,3 +1,33 @@
 \chapter{Experiments}
+In this chapter, the quality of the processing modules (Network and Tracker) is characterized. Finally, the experiments on the final solution are showed.\\
+\section{Setup}
+The experiments commented above were performed on a laptop PC with \textit{Intel® Core™ i7-4510U CPU @ 2.00GHz x 4} and no GPU acceleration.\\ As commented in section \ref{metrics_tool} the Object Detection Metrics tool was used for obtaining the following metrics: precision, recall and AP. Apart from that the tool was modified to provide the TP, FP and GT numbers. The speed measuremenents are obtained directly from the dl-objecttracker in two YML files (for both the Network and the Tracker modules).\\
+The dataset selected for evaluating the project is the MOT17Det \textit{train} set. The results were not evaluated on the \textit{test} set due to the fact that the official web of the challenge does not include in the data the annotated ground truth of the test set. To obtain the ground truth from this dataset and adapt it to the metrics tool a little Python script was created following the official reference \cite{milan2016mot16}. However, some modifications were done to allow the compatibility with the metrics tool and also the datasets on which the neural networks are trained (COCO and PASCAL) due to the labels' names (see Table \ref{tab:mot_labels}). Following the official MOT interpretation of ground truth detection files, the final ground truths obtained from the train set only include the \textit{person} class.
+\begin{table}[H]
+\tiny
+\begin{center}
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{ID}                       & \multicolumn{1}{c|}{\textbf{Label in MOT gt}} & \multicolumn{1}{c|}{\textbf{Label in our gt}} \\ \hline
+\textbf{1}                        & Pedestrian                                    & Person                                        \\ \hline
+\textbf{2}                        & Person on vehicle                             & Car                                           \\ \hline
+\textbf{3}                        & Car                                           & Car                                           \\ \hline
+\textbf{4}                        & Bicycle                                       & Bicycle                                       \\ \hline
+\textbf{5}                        & Motorbike                                     & Motorbike                                     \\ \hline
+\textbf{6}                        & Non motorized vehicle                         & Bicycle                                       \\ \hline
+\textbf{7}                        & Static person                                 & Person                                        \\ \hline
+\textbf{8}                        & Distractor                                    & -                                             \\ \hline
+\textbf{9}                        & Occluder                                      & -                                             \\ \hline
+\textbf{10}                       & Occluder on the ground                        & -                                             \\ \hline
+\textbf{11}                       & Occluder full                                 & -                                             \\ \hline
+\multicolumn{1}{|l|}{\textbf{12}} & Reflection                                    & -                                             \\ \hline
+\end{tabular}
+\end{center}
+\caption{Label equivalences with MOT ground truth in our ground truth}
+\label{tab:mot_labels}
+\end{table}
+\section{Neural network experiments}
 
+\section{Tracker experiments}
 The GOTURN (\textit{Generic Object Tracking Using Regression Networks}) is a deep learning based tracking algorithm which learns the motion of the object in an \textit{offline} manner. Many real-time trackers rely on \textit{online} learning that is usually much faster than a deep learning based tracking solution. The authors affirm in the original paper \cite{held2016learning} that they are ``the first neural-network tracker that learns to track generic objects at 100 FPS" (using GPU acceleration, Nvidia GTX 680). However, when using only a CPU the tracker runs at 2,7 FPS according to the authors. This was the main reason to discard this tracker for the project. \textit{Rewrite and comment tests made...}%ToDo: comentar tests feitos con goturn
+\section{Final solution experiments}
