@@ -1,2 +1,11 @@
 \chapter{Conclusions}
 \section{Future work}
+The following are some of the possible future improvements for this work:
+\begin{enumerate}
+    \item Train neural network models used (or not) in multiobject tracking datasets such as MOT. This could lead to better results.
+    \item Try weights quantization techniques in neural networks with high number of parameters (region-based, for example).
+    \item Refering to the tracking, the multiprocessing with dlib for tracking is available but it was not introduced in the project. This may speed up the tracking with dlib.
+    \item Improve the metrics calculation: assigning IDs to the tracked objects allowing for the calculation of tracking metrics (MOTA, for example), checking all possible combinations available in the configuration of the project.
+    \item Test the application in other non-GPU devices as Raspberry Pi or Intel Computer Stick... and also in devices with graphic acceleration.
+    \item Solve some pending bugs in the GUI?
+\end{enumerate}

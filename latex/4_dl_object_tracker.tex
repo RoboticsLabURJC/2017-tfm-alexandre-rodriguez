@@ -56,22 +56,61 @@ Apart from providing images the Camera thread also controls the flow of the appl
 The GUI module provides the interface with the user and, as commented before, is optional. It was implemented using the tools provided by PyQt5, in concrete with the packages \textit{QtGui, QtCore} and \textit{QtWidgets}.\\
 The graphical interface has four windows and two buttons. The top-left window shows the input frames in real-time while the top-right one shows the final results. The intermediate results obtained from the Network and the Tracker will be provided at the bottom. The application with GUI has two modes with its respective buttons: ``run continuous" and ``run now". In the first one, the application runs continuously until it finishes the process (the process finishes depending on the image source). In the second one, the user can push the \textit{Run now} button to make the Network detect on the current frame and continue the tracking from that frame towards.
 \section{Neural Network} 
-The Network module is tasked with the accurated detections in the images which are feeding the Tracker on every iteration. It supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}}. The successfully tried detectors include SSD and R-CNN detectors such as Mask R-CNN (Inception v2) or SSD (Mobilenet v2). The Keras models are limited to SSD architectures of input size 300x300 or 512x512 and it can be obtained from this set\footnote{\href {https://github.com/pierluigiferrari/ssd_keras#download-the-original-trained-model-weights}{Keras models}}.\\
+The Network module is tasked with the object detections in the images which are feeding the Tracker on every iteration. It supports Tensorflow and Keras object detection models. The Tensorflow models can be obtained from the Tensorflow detection model zoo\footnote{\href {https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md}{Tensorflow detection model zoo}} and include SSD and R-CNN detectors. The Keras models are limited to SSD architectures and it can be obtained from this set\footnote{\href {https://github.com/pierluigiferrari/ssd_keras#download-the-original-trained-model-weights}{Keras models}}.\\
 The datasets on which the model was trained need to be specified to assign the labels to the objects. The supported labels include the VOC, COCO, KITTI, OID and PET datasets. As it ocurred with the Camera module the Network module has configurable options available in \textit{objecttracker.yml}:
 \begin{itemize}
-    \item Framework: Keras or Tensorflow
-    \item Model: the model file
-    \item Dataset: VOC/COCO/KITTI/OID/PET
-    \item Input size: this input size can be modified depending on the selected model. Some models does not allow to change the input image size
-    \item Confidence: the confidence threshold for the detections obtained. If a detection obtains a confidence value below that detection is discarded
+    \item \texttt{Framework}: Keras or Tensorflow
+    \item \texttt{Model}: the model file
+    \item \texttt{Dataset}: VOC/COCO/KITTI/OID/PET
+    \item \texttt{Input size}: this input size can be modified depending on the selected model. Some models does not allow to change the input image size
+    \item \texttt{Confidence}: the confidence threshold for the detections obtained. If a detection obtains a confidence value below that detection is discarded
 \end{itemize}
 The Network thread basically receives an image (previously resized) and performs the inference. As a result it outputs the detections obtained in the image (if any) and it draws these detections in form of bounding boxes containing also the label and the confidence value.\\
-The logging of the Network and Tracker results are optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. These results are logged in the \texttt{logNetwork} and \texttt{logTracker} functions respectively.
-\subsection{Mask R-CNN InceptionV2}
-\subsection{SSD MobileNetV2}
-\subsection{Faster R-CNN InceptionV2}
-\subsection{SSD VGG}
-%ToDo: comentar que hay varios modelos con distintos datasets
+The logging of the Network and Tracker results are optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. These results are logged in the \texttt{logNetwork} and \texttt{logTracker} functions respectively.\\
+
+\subsection{Tensorflow models}
+These models are obtained from the Tensorflow detection model zoo which provides models for inference out-of-the-box, i.e.\ to be directly used. From the models available only some of them were tested for its use in the project. The pre-trained models used were trained on the COCO dataset because the classes available in this dataset were considered enough for the type of objects that can be seen in the tracking sequences used. In the next table, the Tensorflow models performance can be seen:
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Model name                                 & Speed (FPS) & COCO mAP \\ \hline
+\textbf{ssd\_mobilenet\_v2\_coco}          & 32         & 22       \\ \hline
+\textbf{faster\_rcnn\_inception\_v2\_coco} & 17         & 28       \\ \hline
+\textbf{mask\_rcnn\_inception\_v2\_coco}   & 13         & 25       \\ \hline
+\end{tabular}
+\end{center}
+\caption{Tensorflow models performance (from \href{https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md#coco-trained-models}{Tensorflow detection model zoo}). Note: the COCO mAP numbers here are evaluated on COCO 14 minival set using the \href{http://cocodataset.org/#detection-eval}{MSCOCO evaluation protocol}}
+\end{table}
+The reported running time in ms is done for 600x600 images (including all pre and post-processing). As the authors say, ``these timings depend highly on one's specific hardware configuration (performed using an Nvidia GeForce GTX TITAN X card) and should be treated more as relative timings in many cases". However, some characteristics of each model can be extracted in terms of speed and accuracy. As expected, the R-CNN models achieve better accuracy while performing a little slower with respect to SSD.
+
+\subsubsection{SSD MobileNetV2}
+This SSD implementation uses MobileNetV2 as backbone. As commented in \ref{mobilenet}, MobileNetV2 is a network proposed to work on mobile devices, this can be interesting to the project because of the hardware limits (it needs to work on CPU only).
+\subsubsection{Faster R-CNN InceptionV2}
+This region-based model was discussed in \ref{mobilenet}. The implementation uses InceptionV2 \cite{szegedy2016rethinking} as the feature extractor. This backbone follows the idea of its predecesor (InceptionV1) and adds two main ideas: reduce the representational bottleneck and use smart factorization methods. Refering to the first one, the intuition is that neural networks usually perform better when the convolutions do not alter the dimensions of the input in a drastical way (may cause loss of information). To solve this problem they expand the inception module making it wider (instead of deeper). Apart from that, the convolutions are made more efficient in terms of computational complexity. The authors propose factorizing the 5x5 convolution into two 3x3 convolution operations making it 2,78 times faster, among others.
+\subsubsection{Mask R-CNN InceptionV2}
+This state-of-the-art instance segmentation network is used as object detection network because it offers the bounding boxes locations, apart from the instance masks (Figure \ref{fig:maskrcnn_tests}). The implementation selected also makes use of InceptionV2 behind Mask R-CNN.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.5]{figures/maskrcnn_first_tests.png}
+\caption{First tests with Mask R-CNN using live video}
+\label{fig:maskrcnn_tests}
+\end{center}
+\end{figure} 
+\subsection{Keras models}
+The Keras network is a Keras port of the SSD model architecture introduced by Wei Liu et al. in \cite{liu2016ssd} from SSD-Keras\footnote{\href{https://github.com/pierluigiferrari/ssd_keras}{SSD Keras}}. The repository offers pre-trained models and allows the model training from scratch. The base network architecture used is VGG (see \ref{mobilenet}). The pre-trained models used were trained on the PASCAL VOC dataset. The pre-trained models available include COCO and ILSVRC datasets but PASCAL was selected because COCO dataset was already used in the previous SSD model in Tensorflow. In the next table, it can be seen the reported performance made by the author:
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Model name               & Speed (FPS) & VOC2007 test mAP @ 0,5 \\ \hline
+\textbf{SSD300\_VOC0712} & 39          & 77,5                   \\ \hline
+\textbf{SSD500\_VOC0712} & 20          & 79,8                   \\ \hline
+\end{tabular}
+\end{center}
+\caption{Keras models performance (from \href{https://github.com/pierluigiferrari/ssd_keras#performance}{SSD-Keras performance}). Note: evaluated using official Pascal VOC 2012 test server using an NVIDIA GeForce GTX 1070 mobile.}
+\end{table}
+The author affirms that the implementation performs slightly better than the original SSD implementation in Caffe\footnote{\href{https://github.com/weiliu89/caffe/tree/ssd}{SSD-Caffe}}.
 
 \section{Tracker}
 The Tracker module is the core of the project and therefore it is going to be explained more in deep.\\
