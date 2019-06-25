@@ -156,7 +156,7 @@ class DetectionNetwork:
                 detected_image = self.renderModifiedImage(fps_rate)
             self.activated = False
             zeros = False
-            print('Detection done!')
+            # print('Detection done!')
 
         else:
             detected_image = np.array(np.zeros((480, 320), dtype=np.int32))  # size of images in gui

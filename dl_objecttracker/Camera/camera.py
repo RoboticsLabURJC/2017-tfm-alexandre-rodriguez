@@ -246,8 +246,10 @@ class Camera:
                             im_net_scaled = im_net.scaled(self.gui.im_net_label.size())
                             self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
                             self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
+
                         else:  # gui off, save image
-                            cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', self.im_segmented)  # in BGR
+                            saved_image = cv2.cvtColor(self.im_net, cv2.COLOR_BGR2RGB)
+                            cv2.imwrite('./images_results/' + str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)  # in BGR
 
                         # tracking configuration
                         self.trackerConfiguration()
@@ -265,7 +267,7 @@ class Camera:
                                 self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
                             else:  # gui off, save image
                                 saved_image = cv2.cvtColor(im_tracked, cv2.COLOR_BGR2RGB)
-                                cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)  # in RGB
+                                cv2.imwrite('./images_results/' + str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)  # in RGB
 
                 except AttributeError:
                     pass
@@ -290,7 +292,7 @@ class Camera:
                         self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
                     else:  # gui off, save image
                         saved_image = cv2.cvtColor(self.im_net, cv2.COLOR_BGR2RGB)
-                        cv2.imwrite(str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)
+                        cv2.imwrite('./images_results/' + str(self.frame_counter - self.filename_offset) + '.jpg', saved_image)
                     self.im_once_set = False
                     self.buffer = self.buffer[self.frame_to_process:len(self.buffer)]
 
@@ -303,6 +305,7 @@ class Camera:
             im_tracked = self.tracker.getOutputImage()
             im_net = self.network.getOutputImage()[0]
             self.tracker.checkProgress()
+
             if im_tracked is not None:  # last tracked from Tracker
                 if self.gui_cfg == 'on':
                     im_tracked = QtGui.QImage(im_tracked.data, im_tracked.shape[1],
@@ -313,7 +316,8 @@ class Camera:
                     self.gui.im_tracked_label.setPixmap(QtGui.QPixmap.fromImage(im_tracked_scaled))
                 else:  # gui off, save image
                     saved_image = cv2.cvtColor(im_tracked, cv2.COLOR_BGR2RGB)
-                    cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+                    cv2.imwrite('./images_results/' + str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+
             if im_net is not None and im_tracked is None:  # last detection from Net
                 if self.gui_cfg == 'on':
                     im_net = QtGui.QImage(im_net.data, im_net.shape[1],
@@ -323,12 +327,14 @@ class Camera:
                     self.gui.im_combined_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))
                     self.gui.im_net_label.setPixmap(QtGui.QPixmap.fromImage(im_net_scaled))  #ToDo: set functions de net/tracker image in GUI
                 else:  # gui off, save image
-                    saved_image = cv2.cvtColor(im_net, cv2.COLOR_BGR2RGB)
-                    cv2.imwrite(str(self.frame_counter) + '.jpg', saved_image)  # in RGB
+                    cv2.imwrite('./images_results/' + str(self.frame_counter) + '.jpg', im_net)  # in RGB
 
             if self.tracker.logger_status and not self.network.activated and not self.tracker.activated:
                 self.tracker.logTracking()
                 self.network.logNetwork()
 
             if not self.network.activated and not self.tracker.activated:
-                print('Finished processing video, please close the window...')
+                if self.gui_cfg == 'on':
+                    print('Finished processing video, please close the window...')
+                else:
+                    print('Finished processing video, please close the application (ctrl+c).')
