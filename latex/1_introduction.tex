@@ -1,6 +1,6 @@
 \chapter{Introduction}\label{cap.introduccion}
 \setlength{\parindent}{0pt}
-This work is focused in the problem of visual object tracking of multiple objects using deep learning and tracking-by-detection techniques. In this chapter, the context of this project is introduced. Finally, the main objectives of this thesis and the methodology used to fulfil them are going to be explained.
+This work is focused in the problem of visual object tracking of multiple objects using deep learning and tracking-by-detection techniques. In this chapter, the context of this project is presented. Finally, the main objectives of this thesis and the methodology used to fulfil them are going to be explained.
 
 \section{Multiple Object Tracking in Computer Vision}
 The Multiple Object Tracking or \textit{MOT} is an important computer vision problem which continues to attract attention because of its potential in both the academic and commercial spheres. The real-world applications of the multiobject tracking are numerous including human-computer interaction, autonomous vehicles, robotics, video indexing, surveillance or security, among others. The computer vision community have been making big efforts in the past few decades to solve the MOT problem but the task is still open for improvement.\\ Many autonomous car projects are taking place globally which require solutions to various different problems including to keep an eye to all other moving objects in the area where the car is located (Figure \ref{fig:adas_tracking}). The outputs from the tracking module are a basic input for other modules like maneuver planning and trajectory planning. Autonomous vehicles are key in the continuous progress made in tracking and in the computer vision community in general. Many multi-object tracking algorithms have been proposed to solve the problem of real-world traffic monitoring. In these kind of tasks, the algorithms have to deal with complex occlusion situations and difficult object matching.\\
@@ -43,8 +43,7 @@ Apart from the typical deep learning applications, in the last few years other a
 \end{center}
 \end{figure}
 Given the broad areas of application where deep learning is succeeding and the ones who are still in research it is going to be studied on this master thesis the use of deep learning techniques to tackle the multi-object tracking problem.\\
-The deep learning for tracking has been used in previous works from other colleagues such as Marcos\footnote{\href{https://gsyc.urjc.es/jmplaza/students/tfm-visualtracking-marcos_pieras-2017.pdf}{Visual people tracking with deep learning
-detection and feature tracking}}. In his work, the task is a visual tracking on people using deep learning with a classical feature tracking based on the Lucas-Kanade algorithm \cite{baker2004lucas}. The detections obtained by the neural networks allow to build a robust hybrid tracker. However, these detections are precalculated before launching the tracking.\\
+The deep learning for tracking has been used in previous works from other colleagues such as Marcos \cite{tfm-marcos}. In his work, the task is a visual tracking on people using deep learning with a classical feature tracking based on the Lucas-Kanade algorithm \cite{baker2004lucas}. The detections obtained by the neural networks allow to build a robust hybrid tracker. However, these detections are calculated in an offline way before launching the tracking.\\
 Other interesting works with neural networks, in this case, for object detection have been developed such as \textit{Object Detector} \cite{condes2018person}.
 This application is composed of three modules working as three  asynchronous threads. These modules are: a \textit{Camera} that provides the images, a \textit{GUI} that provides the user interface and a \textit{DetectionNetwork} that encapsulates an object detector neural network. As a result this node allows the user to visualize object detections, i.e.\ bounding boxes drawn over the image in real-time. The images can be obtained from different sources as a webcam, a video or via remote proxy. It also provides functionality to perform on-demand detection. The Figure \ref{fig:object_detector} shows the Object Detector running.
 \begin{figure}[H]
@@ -59,7 +58,7 @@ As it has been seen, the deep learning and the multiobject tracking are still op
 \section{Objectives}
 The main objective of this master thesis is to build a multi-object tracking application which makes use of two techniques: deep learning and 2D-tracking. In this work we are going to study how to use the best of both techniques to build a robust and fast multiobject tracker which can be capable of run in resource constrained hardware on real-time. This work takes the form of a user application and allows multiple configurations. The developed solution will be tested with well-known datasets of multiobject tracking challenges which will provide the performances obtained by each configuration of the application and finally, it will allow the selection of the best configuration.\\
 This task can be divided into different subobjectives:
-\begin{itemize}
+\begin{enumerate}
 \item \textbf{Development of an object detector using deep learning}\\
 Learn the fundamentals of object detection using deep learning techniques. Study the performance on both accuracy and speed of these techniques in datasets. Finally, select the default object detector.
 \item \textbf{Development of a tracking module}\\
@@ -68,13 +67,13 @@ Build the tracking module taking into account the necessity of speed in constrai
 Integration of the modules needed into a thread infrastructure. This will imply a sophisticaded synchronization between them.
 \item \textbf{Experimental validation}\\
 Finally, several experiments with state-of-the-art datasets will be performed to validate the developed solution and select the best configuration based on the extracted results.
-\end{itemize}
+\end{enumerate}
 
 \section{Methodology} \label{Methodology}
-In addition, the following tools have been employed to follow the project progress and making it visible for the community:
+The following tools have been employed to follow the project progress and making it visible for the community:
 \begin{itemize}
-    \item \textbf{GitHub repository:} the code of the project is publicly available on GitHub and was constantly updated. The repository can be accessed in the link: \url{https://github.com/RoboticsURJC-students/2017-tfm-alexandre-rodriguez}
-    \item \textbf{Wiki:} it has been used as a blog of the progress of the project. In \url{http://jderobot.org/Arodriguez-tfm} the steps followed to achieve this target can be seen.
+    \item \textbf{GitHub repository:} the code of the project is publicly available on GitHub and was constantly updated. The repository can be accessed in the link\footnote{ \url{https://github.com/RoboticsURJC-students/2017-tfm-alexandre-rodriguez}}.
+    \item \textbf{Wiki:} it has been used as a blog of the progress of the project. In the link\footnote{ \url{http://jderobot.org/Arodriguez-tfm}}, the steps followed to achieve this target can be seen.
 \end{itemize}
 The development of this project has been weekly followed by the tutor. In this weekly meetings the work done in the previous week was evaluated and discussed ending in new milestones for the following week. This continuous feedback allowed a better development of the project both in terms of understanding the topic in question and also in terms of time management.\\
 
