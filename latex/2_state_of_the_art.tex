@@ -264,7 +264,7 @@ It is very common to see that the metrics are established by a given challenge o
     \end{figure}
     This average can be done in two main ways: 11-point interpolation or interpolating all points.
     \begin{itemize}
-        \item \textbf{11-point interpolation}: is defined as the mean precision at a set of eleven equally-spaced recall values ranging from 0 to 1 (Equation \ref{11_1}). The precision at each recall value is obtained by taking the maximum precision measured value for a method for which the corresponding recall is above \textit{r} (Equation \ref{11_2}).
+        \item \textbf{11-point interpolation}: is defined as the mean precision at a set of eleven equally-spaced recall values ranging from 0 to 1 (Equation \ref{11_1}). The precision at each recall value is obtained by taking the maximum precision measured value for a method for which the corresponding recall is above \textit{r} (Equation \ref{11_2}). This was the method used in Pascal VOC 2008.
         \begin{center}
         \begin{equation}\label{11_1}
             AP = \frac{1}{11}\sum_{r\in{\{0,0.1,...,1\}}}\rho_{interp(r)}
@@ -274,7 +274,7 @@ It is very common to see that the metrics are established by a given challenge o
         \end{equation}
         \end{center}
         \\ \ \\
-        \item \textbf{All points interpolation}: in this case the mean precision is done interpolating through all recall points (Equation \ref{all_1}). The precision at each level \textit{r} is obtained now taking the maximum precision which has a recall value greater or equal than \textit{r + 1} (Equation \ref{all_2}). This method of interpolation is used in Pascal VOC metrics from the year 2010 onwards.
+        \item \textbf{All points interpolation}: in this case the mean precision is done interpolating through all recall points (Equation \ref{all_1}). The precision at each level \textit{r} is obtained now taking the maximum precision which has a recall value greater or equal than the recall value at the level \textit{r + 1} (Equation \ref{all_2}). This method of interpolation is used in Pascal VOC metrics from the year 2010 onwards.
     
         \begin{center}
         \begin{equation}\label{all_1}
@@ -284,6 +284,16 @@ It is very common to see that the metrics are established by a given challenge o
             \rho_{interp(r_n_+_1)}=\max_{\tilde{r}:\tilde{r}\geq r_n_+_1}{\rho(\tilde{r})}
         \end{equation}
         \end{center}
+        In the next figure, these calculations are presented in a graphical way. With this interpolation the AUC obtained is exact.
+        \begin{figure}[H]
+        \begin{center}
+            \centering
+            \includegraphics[scale=0.4]{figures/ap_all.jpeg}
+            \label{fig:all_ap}
+            \caption{All points interpolation (from \cite{all_ap_fig})}
+        \end{center}
+        \end{figure}
+        
     \end{itemize}
 \end{itemize}
 
