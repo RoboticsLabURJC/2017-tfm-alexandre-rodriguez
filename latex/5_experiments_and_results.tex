@@ -1,8 +1,8 @@
 \chapter{Experiments}
-In this chapter, the quality of the processing modules (Network and Tracker) is characterized. Finally, the experiments on the final solution are showed.\\
+In this chapter, the quality of the Network and Tracker modules is characterized. First, the available neural networks will be evaluated with a common tracker to obtain the final neural network used for object detection. Second, the tracker implementations will be also characterized using the selected neural network. This will give us the final combination of Network and Tracker module to perform the final experiments. Before these experiments, the configurable parameters will be adjusted to select the best performing values. Finally, the experiments on the final solution are showed.\\
 \section{Setup}
-The experiments commented above were performed on a laptop PC with \textit{Intel® Core™ i7-4510U CPU @ 2.00GHz x 4} and no GPU acceleration.\\ As commented in section \ref{metrics_tool} the Object Detection Metrics tool was used for obtaining the following metrics: precision, recall and AP. To be mentioned that the tool was modified to provide the TP, FP and GT numbers. The speed measuremenents are obtained directly from the dl-objecttracker in two YML files (for both the Network and the Tracker modules).\\
-The dataset selected for evaluating the project is the MOT17Det \textit{train} set. The results were not evaluated on the \textit{test} set due to the fact that the official web of the challenge does not include in the data the annotated ground truth of the test set. To obtain the ground truth from this dataset and adapt it to the metrics tool a little Python script was created following the official reference \cite{milan2016mot16}. However, some modifications were done to allow the compatibility between the metrics tool and the labels of the detections (the neural networks are trained in COCO or PASCAL) (see Table \ref{tab:mot_labels}). Following the official MOT interpretation of ground truth detection files, the final ground truths obtained from the train set only include the \textit{person} class.
+The experiments were performed on a laptop PC with \textit{Intel® Core™ i7-4510U CPU @ 2.00GHz x 4} and no GPU acceleration.\\ As commented in section \ref{metrics_tool}, the Object Detection Metrics tool was used for obtaining the following metrics: precision, recall and AP. It is necessary to be mentioned that the tool was modified to provide the TP, FP and GT numbers. The speed measuremenents are obtained directly from the dl-objecttracker in two YML files (for both the Network and the Tracker modules).\\
+The dataset selected for evaluating the project is the MOT17Det \textit{train} set. The results were not evaluated on the \textit{test} set due to the fact that the official web of the challenge does not include in the provided data the annotated ground truth of the test set. To obtain the ground truth from this dataset and adapt it to the metrics tool a little Python script was created following the official reference \cite{milan2016mot16}. However, some modifications were done to allow the compatibility between the metrics tool and the labels of the detections (the neural networks are trained in COCO or PASCAL) (see Table \ref{tab:mot_labels}). Following the official MOT interpretation of ground truth detection files, the final ground truths obtained from the train set only include the \textit{person} class.
 \begin{table}[H]
 \tiny
 \begin{center}
@@ -26,8 +26,46 @@ The dataset selected for evaluating the project is the MOT17Det \textit{train} s
 \caption{Label equivalences with MOT ground truth in our ground truth}
 \label{tab:mot_labels}
 \end{table}
-\section{Neural network experiments}
-
-\section{Tracker experiments}
+\section{Neural network}
+The correct selection of a neural network model for object detection is crucial in this project as it gives the tracker module the previous detections the tracker needs to track. As commented in section \ref{neural_networks}, the selected neural networks models are:
+\begin{itemize}
+    \item SSD MobileNetV2, pretrained on COCO (Tensorflow)
+    \item Faster R-CNN InceptionV2, pretrained on COCO (Tensorflow)
+    \item Mask R-CNN InceptionV2, pretrained on COCO (Tensorflow)
+    \item SSD VGG, pretrained on Pascal VOC (Keras)
+\end{itemize}
+Three sequences from the dataset were selected to evaluate the performance of the models. The reason is that these sequences represent most of the possible difficulties that can appear in multiple object tracking tasks such as occlusions, new targets, fixed camera, big motion from frame to frame, etc. The selected sequences are MOT17-09, MOT17-11 and MOT17-05.\\
+The MOSSE tracker was selected as common tracker and the threshold for all neural network detection was fixed to 0,6. This was done to allow a fair comparison between the models.
+\begin{table}[H]
+\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}                         & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Net} \\ \hline
+\textbf{SSD MobileNetV2}          & 16,06                  & 5,282            \\ \hline
+\textbf{Faster R-CNN InceptionV2} & 31,03                  & 1,026            \\ \hline
+\textbf{Mask R-CNN InceptionV2}   & 27,89                  & 0,286            \\ \hline
+\textbf{SSD VGG 512}              & 23,76                  & 0,339            \\ \hline
+\end{tabular}
+\end{center}
+\caption{}
+\label{tab:net_exp_1}
+\end{table}
+\begin{table}[H]
+\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}                         & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Net} \\ \hline
+\textbf{SSD MobileNetV2}          & 11,48                  & 8,25             \\ \hline
+\textbf{Faster R-CNN InceptionV2} & 24,36                  & 1,067            \\ \hline
+\textbf{Mask R-CNN InceptionV2}   & 26,25                  & 0,292            \\ \hline
+\textbf{SSD VGG 300}              & 19,08                  & 0,988            \\ \hline
+\end{tabular}
+\end{center}
+\caption{}
+\label{tab:net_exp_2}
+\end{table}
+\section{Tracker}
 The GOTURN (\textit{Generic Object Tracking Using Regression Networks}) is a deep learning based tracking algorithm which learns the motion of the object in an \textit{offline} manner. Many real-time trackers rely on \textit{online} learning that is usually much faster than a deep learning based tracking solution. The authors affirm in the original paper \cite{held2016learning} that they are ``the first neural-network tracker that learns to track generic objects at 100 FPS" (using GPU acceleration, Nvidia GTX 680). However, when using only a CPU the tracker runs at 2,7 FPS according to the authors. This was the main reason to discard this tracker for the project. \textit{Rewrite and comment tests made...}%ToDo: comentar tests con goturn
-\section{Final solution experiments}
+\section{Final solution}
