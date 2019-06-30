@@ -124,9 +124,11 @@ The metrics for tracking can be classified into four subsets according to differ
     \item \textbf{Accuracy:} this type of metrics tries to measure how accurately a tracking algorithm tracks targets. From this type of metric the following two are briefly commented: \textit{IDs} \cite{yamaguchi2011you} and \textit{MOTA} \cite{bernardin2008evaluating}.\\ The IDs metric measures the ID \textit{switches}, i.e.\ given an id for an object it measures how many times the MOT algorithm changes this id.\\ The \textit{Multiple Object Tracking Accuracy} or MOTA is calculated as follows:
     \begin{figure}[H]
     \begin{center}
-    \includegraphics[scale=0.3]{figures/mota.png}
-    \caption{MOTA definition: where $m_t$ is the number of misdetections (FN), $fp_t$ is the number of false positives (FP), $mme_t$ is the number of mismatches (IDs) and $g_t$ is the sum of TP and FN (from \cite{bernardin2008evaluating})}
-    \label{fig:mota}
+    \begin{equation}
+        MOTA= 1-\frac{\sum_t{(m_t + fp_t + mme_t)} }{\sum_t{g_t} }
+        \caption{MOTA definition: where $m_t$ is the number of misdetections (FN), $fp_t$ is the number of false positives (FP), $mme_t$ is the number of mismatches (IDs) and $g_t$ is the sum of TP and FN (from \cite{bernardin2008evaluating})}
+        \label{eq:mota}
+    \end{equation}
     \end{center}
     \end{figure}
     This combination of FP rate, FN rate and mismatch rate into a single number is, as the authors indicate, ``by far the most widely accepted evaluation measure for MOT" \cite{milan2016mot16} and it gives an intuitive measure on the tracker's performance at detection and trajectory. It does not take into account the precision of that detections' location.
@@ -134,7 +136,9 @@ The metrics for tracking can be classified into four subsets according to differ
     \item \textbf{Precision:} in this metrics group the key factor is the description of the precision that the tracked objects have using criteria such as bounding box overlap or distance. The most important are \textit{MOTP} \cite{bernardin2008evaluating}, \textit{TDE} \cite{kratz2010tracking} and \textit{OSPA} \cite{ristic2011metric}. MOTP, for example, uses a ratio with the distance between the ground-truth detections locations \textit{d} and the associated detected locations \textit{c}.
     \begin{figure}[H]
     \begin{center}
-    \includegraphics[scale=0.4]{figures/motp.png}
+    \begin{equation}
+        MOTP=\frac{\sum_{i,t}{d^i_t} }{\sum_t{c_t}}
+    \end{equation}
     \caption{MOTP definition (from \cite{bernardin2008evaluating})}
     \label{fig:motp}
     \end{center}
