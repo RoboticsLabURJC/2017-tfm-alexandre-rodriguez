@@ -68,7 +68,7 @@ The datasets on which the model was trained need to be specified to assign the l
 The Network thread basically receives an image (previously resized) and performs the inference. As a result it outputs the detections obtained in the image (if any) and it draws these detections in form of bounding boxes containing also the label and the confidence value.\\
 The logging of the Network and Tracker results are optional and it can be changed at the YML configuration file in \texttt{ObjectTracker->Logger->Status}. These results are logged in the \texttt{logNetwork} and \texttt{logTracker} functions respectively.\\
 
-\subsection{Tensorflow models}
+\subsection{Tensorflow models} \label{tf_models}
 These models are obtained from the Tensorflow detection model zoo which provides models for inference out-of-the-box, i.e.\ to be directly used. From the models available only some of them were tested for its use in the project. The pre-trained models used were trained on the COCO dataset because the classes available in this dataset were considered enough for the type of objects that can be seen in the tracking sequences used. In the next table, the Tensorflow models performance can be seen:
 \begin{table}[H]
 \begin{center}
@@ -97,8 +97,8 @@ This state-of-the-art instance segmentation network is used as object detection 
 \label{fig:maskrcnn_tests}
 \end{center}
 \end{figure} 
-\subsection{Keras models}
-The Keras network is a Keras port of the SSD model architecture introduced by Wei Liu et al. in \cite{liu2016ssd} from SSD-Keras\footnote{\href{https://github.com/pierluigiferrari/ssd_keras}{SSD-Keras}}. The repository offers pre-trained models and allows the model training from scratch. The base network architecture used is VGG (see \ref{mobilenet}). The pre-trained models used were trained on the PASCAL VOC dataset. The pre-trained models available include COCO and ILSVRC datasets but PASCAL was selected because COCO dataset was already used in the previous SSD model in Tensorflow. In the next table, it can be seen the reported performance made by the author:
+\subsection{Keras models} \label{keras_models}
+The Keras network is a Keras port of the SSD model architecture introduced by Wei Liu et al. in \cite{liu2016ssd} from SSD-Keras\footnote{\href{https://github.com/pierluigiferrari/ssd_keras}{SSD-Keras}}. The repository offers pre-trained models and allows the model training from scratch. The base network architecture used is VGG (see \ref{mobilenet}). The pre-trained models used were trained on the PASCAL VOC dataset. The pre-trained models available include COCO and ILSVRC datasets but PASCAL was selected because COCO dataset was already used in the previous SSD model in Tensorflow. In the next table, it can be seen the author reported performance:
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{|c|c|c|}
@@ -108,7 +108,7 @@ Model name               & Speed (FPS) & VOC2007 test mAP @ 0,5 \\ \hline
 \textbf{SSD512\_VOC0712} & 20          & 79,8                   \\ \hline
 \end{tabular}
 \end{center}
-\caption{Keras models performance (from \href{https://github.com/pierluigiferrari/ssd_keras#performance}{SSD-Keras performance}). Note: evaluated using official Pascal VOC 2012 test server using an NVIDIA GeForce GTX 1070 mobile.}
+\caption{Keras models performance (from \href{https://github.com/pierluigiferrari/ssd_keras#performance}{SSD-Keras performance}). Evaluated in the official Pascal VOC 2012 test server using an NVIDIA GeForce GTX 1070 mobile.}
 \end{table}
 The author affirms that the implementation performs slightly better than the original SSD implementation in Caffe\footnote{\href{https://github.com/weiliu89/caffe/tree/ssd}{SSD-Caffe}}.
 
