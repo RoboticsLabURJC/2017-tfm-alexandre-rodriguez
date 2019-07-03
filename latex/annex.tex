@@ -1,0 +1,39 @@
+\appendix 
+\addcontentsline{toc}{chapter}{Annex}
+\newpage
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{MEDIANFLOW} & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Tracker} \\ \hline
+\textbf{200x200}    & 33,31                  & 114,74               \\ \hline
+\textbf{300x300}    & 39,26                  & 64,57                \\ \hline
+\textbf{400x400}    & \textit{43,31}         & \textit{41,21}       \\ \hline
+\textbf{500x500}    & 40,25                  & 31,49                \\ \hline
+\textbf{600x600}    & 34,92                  & 27,36                \\ \hline
+\textbf{700x700}    & 40,30                  & 20,58                \\ \hline
+\textbf{800x800}    & 37,80                  & 16,58                \\ \hline
+\end{tabular}
+\end{center}
+\caption{Image input size experiments on MOT17-09}
+\label{tab:annex_1}
+\end{table}
+
+\begin{table}[H]
+\scriptsize 
+
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{dl\_objecttracker} & \textbf{AP @ 0,5 (\%)} & \multicolumn{1}{l|}{\textbf{Precision}} & \multicolumn{1}{l|}{\textbf{Recall}} & \multicolumn{1}{l|}{\textbf{TP}} & \multicolumn{1}{l|}{\textbf{FP}} & \multicolumn{1}{l|}{\textbf{GT}} & \textbf{FPS Net} & \multicolumn{1}{l|}{\textbf{FPS Tracker}} \\ \hline
+\textbf{MOT17-02}          & 11,59                  & 0,722                                   & 0,158                                & 2953                             & 1135                             & 18581                            & 0,93             & 31,4                                      \\ \hline
+\textbf{MOT17-04}          & 17,25                  & 0,822                                   & 0,209                                & 9943                             & 2152                             & 47557                            & 0,869            & 23,96                                     \\ \hline
+\textbf{MOT17-05}          & 36,53                  & 0,744                                   & 0,486                                & 3367                             & 1154                             & 6917                             & 0,98             & 37,28                                     \\ \hline
+\textbf{MOT17-09}          & 43,53                  & 0,853                                   & 0,510                                & 2717                             & 468                              & 5325                             & 0,95             & 35,83                                     \\ \hline
+\textbf{MOT17-10}          & 23,26                  & 0,797                                   & 0,274                                & 3528                             & 896                              & 12839                            & 0,943            & 36,18                                     \\ \hline
+\textbf{MOT17-11}          & 35,74                  & 0,831                                   & 0,429                                & 4052                             & 819                              & 9436                             & 0,96             & 41,56                                     \\ \hline
+\textbf{MOT17-13}          & 14,04                  & 0,833                                   & 0,160                                & 1874                             & 375                              & 11642                            & 0,941            & 42,01                                     \\ \hline
+\end{tabular}
+
+\caption{Final results on MOT17Det train set (detailed). TP: true positives, FP: false positives, GT: ground truth}
+\label{tab:annex_2}
+\end{table}
