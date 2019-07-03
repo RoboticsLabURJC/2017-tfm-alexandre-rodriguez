@@ -103,8 +103,117 @@ From these experiments, it can be seen that the final average precision is simil
 Given this results, the final neural network chosen to perform the object detection is Faster R-CNN InceptionV2.
 \section{Tracker}
 Once the neural network was selected, it is time to evaluate the performance of the second module involved in the core of the multiobject tracking of the application, the tracking algorithm.\\
-The following experiments will be done on the same sequences as the Network experiments (section \ref{selected_sequences}). In this case, the default configuration includes Faster R-CNN as neural network with a confidence threshold for detection of 0,6. The confidence of the trackers is going to be modified to see its influence on the results. The following tracking algorithms are evaluated: KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE and CF-dlib (see section \ref{tracker_algorithms}).
+The following experiments will be done on the same sequences as the Network experiments (section \ref{selected_sequences}). In this case, the default configuration includes Faster R-CNN as neural network with a confidence threshold for detection of 0,6. The confidence of the tracker is being used if no comment is made on it. This confidence is going to be modified to see its influence on the results. The following tracking algorithms are evaluated: KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE and CF-dlib (see section \ref{tracker_algorithms}).\\
+\begin{table}[H]
+%\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}           & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Tracker} \\ \hline
+\textbf{KCF}        & \textit{23,07}         & \textit{6,39}        \\ \hline
+\textbf{BOOSTING}   & 13,06                  & 4,78                 \\ \hline
+\textbf{MIL}        & 15,29                  & 2,21                 \\ \hline
+\textbf{TLD}        & 8,38                   & 2,22                 \\ \hline
+\textbf{MEDIANFLOW} & \textit{32,13}         & \textit{12,01}       \\ \hline
+\textbf{CSRT}       & 11,78                  & 2,78                 \\ \hline
+\textbf{MOSSE}      & \textit{34,60}         & \textit{47,07}       \\ \hline
+\textbf{CF-dlib}    & \textit{27,99}         & \textit{9,51}        \\ \hline
+\end{tabular}
+\end{center}
+\caption{Tracker experiments done with an image input size of 1000x1000}
+\label{tab:tracker_exp_1}
+\end{table}
+This experiment gives clear results on how its the performance of the trackers in the sequence, thus the KCF, MEDIANFLOW, MOSSE and CF-dlib outperform in a significant way the accuracy of the rest of the trackers (in terms of AP). A good AP seems to be related with a good frame rate in the tracking.
+The scheme of evaluating the performance with sequences of increasing difficulty will be followed, the next experiment is going to be evaluated in MOT17-11.
 
-\\
+\begin{table}[H]
+%\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}           & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Tracker} \\ \hline
+\textbf{KCF}        & 19,17                  & 4,7                  \\ \hline
+\textbf{MEDIANFLOW} & \textit{27,76}         & \textit{12,88}       \\ \hline
+\textbf{MOSSE}      & \textit{26,23}         & \textit{33,56}       \\ \hline
+\textbf{CF-dlib}    & \textit{25,49}         & \textit{9,95}        \\ \hline
+\end{tabular}
+\end{center}
+\caption{Tracker experiments done with an image input size of 1000x1000}
+\label{tab:tracker_exp_2}
+\end{table}
+The results in this sequence seem to indicate that the KCF tracker is not adecuated for the task. Its results in both AP and speed measurements are below the overall average.
+\begin{table}[H]
+%\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}           & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Tracker} \\ \hline
+\textbf{MEDIANFLOW} & \textit{24,01}         & \textit{13,05}       \\ \hline
+\textbf{MOSSE}      & 16,15                  & 18,14               \\ \hline
+\textbf{CF-dlib}    & 23,97                  & 9,51                 \\ \hline
+\end{tabular}
+\end{center}
+\caption{Tracker experiments done with an image input size of 1000x1000}
+\label{tab:tracker_exp_3}
+\end{table}
+The results from table \ref{tab:tracker_exp_2} lead us to three tracker options that include MEDIANFLOW, MOSSE and CF-dlib. And, after the previous experiment on MOT17-05, MEDIANFLOW gets the overall best performance. It achieves the highest AP score of the three tracker options and the second faster tracking. The faster tracker is MOSSE, following the trend of previous experiments.
+\subsection{Confidence in tracking}
+In section \ref{tracker_algorithms}, the mechanism of confidence of the tracker was introduced. As commented, the tracker continously checks if the tracking obtained from each tracked object is reliable enough. In this subsection, the importance of this parameter is going to be evaluated. To do so, the performance of the three best tracking algorithms from the previous section is measured when the confidence is taken into account and in the opposite case. The selected sequences are MOT17-05 and MOT17-09 with a frame size of 500x500 and the neural network used is Faster R-CNN InceptionV2.\\
+\begin{table}[H]
+%\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}           & \textbf{AP tracker on @ 0,5 (\%)} & \textbf{AP tracker off @ 0,5 (\%)} \\ \hline
+\textbf{MEDIANFLOW} & 36,09                             & 32,35                              \\ \hline
+\textbf{MOSSE}      & 18,60                             & 10,33                              \\ \hline
+\textbf{CF-dlib}    & 23,74                             & 30,06                              \\ \hline
+\end{tabular}
+\end{center}
+\caption{Confidence influence on tracking performance on MOT17-05}
+\label{tab:tracker_exp_4}
+\end{table}
+\begin{table}[H]
+%\tiny
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{}           & \textbf{AP tracker on @ 0,5 (\%)} & \textbf{AP tracker off @ 0,5 (\%)} \\ \hline
+\textbf{MEDIANFLOW} & 37,80                             & 36,17                              \\ \hline
+\textbf{MOSSE}      & 30,16                             & 21,83                              \\ \hline
+\textbf{CF-dlib}    & 28,06                             & 31,60                              \\ \hline
+\end{tabular}
+\end{center}
+\caption{Confidence influence on tracking performance on MOT17-09}
+\label{tab:tracker_exp_5}
+\end{table}
+In the tables \ref{tab:tracker_exp_4} and \ref{tab:tracker_exp_5} the results seem to indicate that the influence of taking into account the confidence parameter with OpenCV trackers is positive. However, it occurs the opposite for the dlib tracking with CF. The MEDIANFLOW tracker is selected to perform the tracking.\\
+Finally, the image input size is modified to check which size fits best to our problem. In table \ref{tab:annex_1}, the image size of 400x400 gets the best balance between speed and accuracy for the tracking task. Given the tracker and the image size, the threshold for the confidence of the detections from the object detection neural networks was evaluated. Using values ranging from 0,3 to 0,7 the experimental selected threshold was 0,5.
+\subsection{GOTURN tracking}
 The GOTURN (\textit{Generic Object Tracking Using Regression Networks}) is a deep learning based tracking algorithm which learns the motion of the object in an \textit{offline} manner. Many real-time trackers rely on \textit{online} learning that is usually much faster than a deep learning based tracking solution. The authors affirm in the original paper \cite{held2016learning} that they are ``the first neural-network tracker that learns to track generic objects at 100 FPS" (using GPU acceleration, Nvidia GTX 680). However, when using only a CPU the tracker runs at 2,7 FPS according to the authors. This was the main reason to discard this tracker for the project. \textit{Rewrite and comment tests made...} %ToDo: comentar tests con goturn
 \section{Final solution}
+After the experiments run, the project follows the next configuration:
+\begin{enumerate}
+    \item Neural network: Faster R-CNN InceptionV2, image input size 400x400, confidence threshold 0,5
+    \item Tracker: MedianFlow using tracking confidence
+\end{enumerate}
+Given this configuration, the project is evaluated on the complete train set of MOT17Det to obtain the results of our final solution.
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{dl\_objecttracker} & \textbf{AP @ 0,5 (\%)} & \textbf{FPS Net} & \multicolumn{1}{l|}{\textbf{FPS Tracker}} \\ \hline
+\textbf{MOT17-02}          & 11,59                  & 0,93             & 31,4                                      \\ \hline
+\textbf{MOT17-04}          & 17,25                  & 0,869            & 23,96                                     \\ \hline
+\textbf{MOT17-05}          & 36,53                  & 0,98             & 37,28                                     \\ \hline
+\textbf{MOT17-09}          & 43,53                  & 0,95             & 35,83                                     \\ \hline
+\textbf{MOT17-10}          & 23,26                  & 0,943            & 36,18                                     \\ \hline
+\textbf{MOT17-11}          & 35,74                  & 0,96             & 41,56                                     \\ \hline
+\textbf{MOT17-13}          & 14,04                  & 0,941            & 42,01                                     \\ \hline
+\end{tabular}
+\end{center}
+\caption{Final results on MOT17Det train set (more detailed results at table \ref{tab:annex_2})}
+\label{tab:final}
+\end{table}
+The best results in terms of average precision occur in the MOT17-09 sequence, followed by MOT17-11 and MOT17-05. This may indicate that the procedure used influences the results giving the better scores in the sequences used to evaluate the performance of the Tracker and Network module. However, from table \ref{tab:annex_2} it can be observed that the three sequences mentioned have in common that they have a smaller number of total ground truth ocurrences. It can be easier for the developed system to get higher results in this type of sequences.\\
+Refering to velocity of the solution, the object detection in the neural network are returned with a stable frame rate of about 1 FPS. In the case of the tracker, the FPS are above 20 FPS in every sequence.
