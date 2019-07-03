@@ -8,19 +8,19 @@ ObjectTracker:
     Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/sequences/MOT17-02.mp4"
 
   Images:
-    Path: "/home/alexandre/Descargas/MOT17Det/train/MOT17-02/img1/%06d.jpg"  # use similar image names' format 
+    Path: "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/MOT17Det/train/MOT17-05/img1/%06d.jpg"  # use similar image names' format 
 
   Network:
-    Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
-    #Model: VGG_coco_SSD_512x512_iter_360000.h5
-    Model: frozen_inference_graph.pb
+    Framework: Tensorflow  # Currently supported: "Keras" or "TensorFlow"
+    #Model: VGG_VOC0712_SSD_512x512_iter_120000.h5
+    Model: faster.pb
     Dataset: COCO  # available: VOC, COCO, KITTI, OID, PET
-    InputSize: [512,512]  # only some models allow changing this size
-    Confidence: 0.6  # confidence threshold for detections
+    InputSize: [400,400]  # only some models allow changing this size
+    Confidence: 0.5  # confidence threshold for detections
 
   Tracker:
     Lib: OpenCV  # Currently supported: "OpenCV" or "dlib"
-    Type: MOSSE  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
+    Type: MEDIANFLOW  # available (with OpenCV as Lib): KCF, BOOSTING, MIL, TLD, MEDIANFLOW, CSRT, MOSSE
 
   Logger:
     Status: on  # turn on/off the logging of the results: "on" or "off"
