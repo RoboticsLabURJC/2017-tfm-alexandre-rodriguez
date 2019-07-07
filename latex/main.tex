@@ -106,13 +106,14 @@
 \renewcommand{\listtablename}{List of Tables}
 \tableofcontents
 
-\cleardoublepage % Índice de figuras
-\addcontentsline{toc}{chapter}{\listfigurename}
+\newpage % Índice de figuras
 \listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
 
-\cleardoublepage % Índice de tablas
+
+\newpage % Índice de tablas
+\listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
-\listoftables 
 
 \cleardoublepage
 %%%%%%%%%%%%%%% Capítulos %%%%%%%%%%%%%%%%%%
@@ -121,26 +122,27 @@
 \setlength{\parindent}{6mm}
 
 \lhead[]{CHAPTER \thechapter. Introduction}
+\clearpage
 \input{1_introduction.tex}
-
+\clearpage
 \lhead[]{CHAPTER \thechapter. State of the Art}
 \input{2_state_of_the_art.tex}
-
+\clearpage
 \lhead[]{CHAPTER \thechapter. Software infraestructure}
 \input{3_software_infraestructure.tex}
-
+\clearpage
 \lhead[]{CHAPTER \thechapter. Multiobject tracking using deep learning and tracking by detection}
 \input{4_dl_object_tracker.tex}
-
+\clearpage
 \lhead[]{CHAPTER \thechapter. Experiments}
 \input{5_experiments_and_results.tex}
-
+\clearpage
 \lhead[]{CHAPTER \thechapter. Conclusions}
 \input{6_summary_and_conclusions.tex}
-
+\clearpage
 \lhead[]{BIBLIOGRAPHY}
 \input{bibliography.tex}
-
+\clearpage
 \lhead[]{ANNEX}
 \input{annex.tex}
 \end{document}

@@ -32,7 +32,15 @@ Both frameworks will be used as building blocks for the neural network module. T
 The Tensorflow version used in this project is the 1.12.0 and the Keras version running is the 2.1.1.
 
 \section{dlib library}
-Written in C++, dlib\footnote {\href{http://dlib.net/}{dlib}} is a general purpose cross-platform library that follows the idea of component-based software engineering, i.e.\ a set of independent software components. This toolkit contains machine learning algorithms and tools to solve real world problems in domains including robotics, embedded devices or mobile phones. In this project, the dlib library is used to perform object tracking. The version used is the 19.17.0.
+Written in C++, dlib\footnote {\href{http://dlib.net/}{dlib}} is a general purpose cross-platform library that follows the idea of component-based software engineering, i.e.\ a set of independent software components. This toolkit contains machine learning algorithms and tools to solve real world problems in domains including robotics, embedded devices or mobile phones. For example, dlib has an interesting face landmark detector. Landmarks in the face are basically key points in the face that can help in tasks such as person recognition. In the automotive industry landmarks are widely used to perform interior monitoring, i.e.\ to monitor the driver status.
+\\In this project, the dlib library is used to perform object tracking. A correlation filter carries out the tracking using scale pyramid representation to handle large-scale variations in tracking \cite{danelljan2014accurate}. The version used is the 19.17.0.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.15]{figures/dlib.jpg}
+\caption{Facial landmarks with dlib, from the pre-trained model iBUG300-W \cite{sagonas2016300}}
+\label{fig:pyqt}
+\end{center}
+\end{figure}
 
 \section{Object Detection Metrics} \label{metrics_tool}
 To obtain the results or statistics from the project the \href{https://github.com/rafaelpadilla/Object-Detection-Metrics}{\textit{Object-Detection-Metrics}} tool has been used. This tool written in Python by Rafael Padilla (thanks for sharing) provides the metrics used in the Pascal VOC object detection challenge: Precision x Recall curve and Average Precision.\\

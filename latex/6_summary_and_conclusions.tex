@@ -1,6 +1,6 @@
 \chapter{Conclusions}
 This chapter summarizes the main contributions of this work. Finally, possible lines of future work are outlined.\\
-This master thesis studied the use of deep learning techniques to build a multiobject tracking system using the tracking-by-detection scheme. To solve this task we used a modular architecture composed of a Network module, a Tracker module, a Camera module and a GUI module. The first module provides object detections using neural network models. These detections are handled by the Tracker module to track a buffer of frames before the new detections had come from the Network. The Camera module controls the general flow of the project which includes the logging mechanism and the user interface (GUI), among others.\\
+This master thesis studied the use of deep learning techniques to build a multiobject tracking system using the tracking-by-detection scheme. To solve this task we used a modular architecture composed of a Network module, a Tracker module, a Camera module and a GUI module. The first module provides object detections using neural network models. These detections are handled by the Tracker module to track a buffer of frames before the new detections had come from the Network. The Camera module controls the general flow of the project which includes the logging mechanism and the user interface (GUI).\\
 The Tracker module can work on three operating regimes depending on the frame rate of the tracking at each instance of time: slow, normal and fast. This allows the tracking to adapt its speed to the processing difficulties (different image sizes, occlusions, appearance changes, ...). It may also help to adapt the speed to the hardware on which it is being used.
 Refering to the user side, the project application allows the user to change many configuration options. This feature can help the quick test of neural networks or trackers for multiobject tracking tasks, for example.\\
 Once the multiobject tracking system was developed, the first three objectives (section \ref{first_objective}) were fullfilled:
@@ -9,7 +9,7 @@ Once the multiobject tracking system was developed, the first three objectives (
     \item Development of a tracking module
     \item Combination of neural object detection and object tracking in a single component
 \end{enumerate}
-After this, the last objective was accomplished as the component was evaluated on a well-known multiobject tracking dataset (MOT17Det) allowing us to choose the best configuration based on some experiments. This included the selection of a neural network model, a tracking algorithm and other parameters such as the confidence thresholds or the image input size (section \ref{final_sol}). The performance and speed measurements obtained allowed us to extract the following conclusions:
+After this, the last objective was accomplished as the component was evaluated on a well-known multiobject tracking dataset (MOT17Det) allowing us to choose the best configuration based on some experiments. This included the selection of a neural network model, a tracking algorithm and other parameters such as the confidence thresholds or the image input size (section \ref{final_sol}). The results obtained allowed us to extract the following conclusions:
 \begin{itemize}
     \item Region-based object detection neural networks obtain better accuracy than single-shot based ones. They can be used to perform inference on CPU at low frame rates.
     \item MedianFlow seems to be the best tracker available in the OpenCV library for its balance between speed and accuracy. MOSSE is the fastest one.
@@ -19,7 +19,7 @@ After this, the last objective was accomplished as the component was evaluated o
 \end{itemize}
 We can say that we have built a multiobject tracking system that performs reasonably well on a MOT dataset despite not being into the State-of-the-Art.
 \section{Future work}
-This master thesis is a first step into the multi-object tracking with deep learning. Once developed and seen the results, we propose the following lines of future work:
+This master thesis is a first step into the multi-object tracking with deep learning. Once developed and seen the results, the following lines of future work are proposed:
 \begin{enumerate}
     \item Train neural network models used (or new ones) in multiobject tracking datasets such as MOT. This could lead to better results.
     \item Refering to the tracking, the multiprocessing with dlib for tracking is available but it was not introduced in the project. This may speed up the tracking with dlib.
