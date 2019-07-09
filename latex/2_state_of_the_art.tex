@@ -35,6 +35,7 @@ In the figure above, one of the last siamese network based tracker called \texti
 \item \textbf{Tracking as regression}: in this group, on the other hand, the network receives only two images (the previous frame and the current one) and directly returns the location of the object in the current frame. Since this tracker predicts a bounding box instead of just the position, it is able to model changes in scale and aspect of the tracked template. However, it only can process a single target and it needs from data augmentation techniques to learn all possible transformations of the targets~\cite{held2016learning}.
 \item \textbf{Tracking with RNN}: this type of algorithms use \textit{Recurrent Neural Networks} to model the sequence of movement of objects from the detection obtained. Thus improves the response to prolonged occlusions in time, for example ~\cite{sadeghian2017tracking}. They are the state of the art in tracking nowadays in terms of accuracy but they usually do not perform well in real-time.
 \end{itemize}
+\\ \ \\
 \section{Datasets for object tracking}
 The visual object tracking is a fundamental task in computer vision which has importance in many applications such as surveillance, autonomous vehicle or video analysis. This task, the same way as others in the field, needs datasets from which create and evaluate the algorithms. The datasets are also commonly associated with competitions that allow the benchmarking of the developed algorithms. These benchmarks often provide the most objective measure of performance and, for this reason, they are important guides for research in the area of study.
 
@@ -217,7 +218,7 @@ Recently, Mask R-CNN~\cite{he2017mask} arose to solve many of these problems and
 \end{center}
 \end{figure}
 Conceptually, Mask R-CNN adds a third stage to Faster R-CNN in which it obtains the mask of the object. The first stage of RPN coincides with that of Faster R-CNN while in the second stage it calculates, in parallel with the prediction of the class and the bounding box, a binary mask for each region of interest (\textit{RoI}). The generation of masks for each class is done without the classes competing with each other, which allows to separate the mask and class predictions from the object prediction. According to the authors, this proves to be the key to obtain good results in the final segmentation.\\ 
-Another key factor in the proper functioning of this method is the correct alignment between the RoI and the extracted characteristics. This is usually done using \textit{RoIPool} in Fast R-CNN but introduces misalignments if the purpose is to segment rather than classify. This is why Mask R-CNN authors create \textit{RoIAlign}. To demonstrate the generality of the proposed method the authors introduce the mask prediction branch on several existing neural network architectures such as Faster R-CNN with ResNet, for example, and they manage to surpass the winners of the 2015 and 2016 COCO Challenge segmentation, MNC~\cite{dai2016instance} and FCIS~\cite{li2016fully}.\\
+Another key factor in the proper functioning of this method is the correct alignment between the RoI and the extracted characteristics. This is usually done using \textit{RoIPool} in Fast R-CNN but introduces misalignments if the purpose is to segment rather than classify. This is why Mask R-CNN authors create \textit{RoIAlign}. To demonstrate the generality of the proposed method the authors introduce the mask prediction branch on several existing neural network architectures such as Faster R-CNN with ResNet, for example, and they manage to surpass the winners of the 2015 and 2016 COCO Challenge segmentation, MNC~\cite{dai2016instance} and FCIS~\cite{li2016fully}.
 
 \section{Datasets for object detection}
 The datasets used when implementing or testing a certain system are a key factor, since they influence the performance that the system can achieve. They also allow for a comparison of the solution found with respect to others that are part of the State of the Art in the task that is carried out, since they are usually associated with some type of competition. Therefore, it is necessary to correctly choose the dataset or datasets used in a computer vision problem. Here are some of the most well-known datasets used in many object detection applications:
@@ -300,7 +301,7 @@ It is very common to see that the metrics are established by a given challenge o
         
     \end{itemize}
 \end{itemize}
-
+\\ \ \\
 \section{Deep learning frameworks in computer vision} \label{dl_frameworks}
 For the use of Deep Learning techniques numerous \textit{frameworks} have emerged. A deep learning framework allows us to build deep learning models more easily and quickly, without getting into all the details of the underlying algorithms. In this section the most important frameworks used for deep learning and computer vision tasks are introduced:
 \begin{itemize}
