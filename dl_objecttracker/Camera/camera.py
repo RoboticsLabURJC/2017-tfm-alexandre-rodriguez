@@ -3,9 +3,9 @@
 #
 # @author: alexandre2r
 #
-# Class which abstracts a Camera from a proxy (created by ICE/ROS),
+# Class which abstracts a Camera with 4 possible video sources
 # and provides the methods to keep it constantly updated.
-#
+# It can get video from local images, local videos, webcam devices using ROS or OpenCV
 #
 # Based on @naxvm code:
 # https://github.com/JdeRobot/dl-objectdetector
@@ -127,8 +127,6 @@ class Camera:
                 im = self.resizeImage(im)
                 im = np.reshape(im, (self.image_net_size[0], self.image_net_size[1], 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (int(self.image_net_size[0]/1.13), int(self.image_net_size[1]/1.06)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
-                            thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
 
         elif self.cam and (self.source == 'local_camera' or self.source == 'local_video' or self.source == 'local_images'):
@@ -138,8 +136,6 @@ class Camera:
                 im = self.resizeImage(im)
                 im = np.reshape(im, (self.image_net_size[0], self.image_net_size[1], 3))
                 self.frame_counter += 1
-                cv2.putText(im, str(self.frame_counter), (int(self.image_net_size[0]/1.13), int(self.image_net_size[1]/1.06)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255),
-                            thickness=2)  # numerate frames to debug, REMOVE in final version
                 self.frame_tag.append(self.frame_counter)
         return im
 

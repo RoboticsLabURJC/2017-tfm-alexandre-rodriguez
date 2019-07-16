@@ -3,9 +3,11 @@
 #
 # @author: alexandre2r
 #
-# It receives images from a live video and classify them into object classes using CNNs and Tracking,
-# based on TensorFlow Deep Learning middleware.
-# It shows the live video and the results in a GUI.
+# Encapsulation of the object tracker which handles the configuration and launches eah module:
+# -camera
+# -network
+# -gui
+# -tracker
 #
 # Based on @nuriaoyaga code:
 # https://github.com/RoboticsURJC-students/2016-tfg-nuria-oyaga/blob/master/numberclassifier.py

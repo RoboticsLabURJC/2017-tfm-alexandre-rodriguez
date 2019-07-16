@@ -203,9 +203,9 @@ class Tracker:
                             cv2.putText(self.image, self.input_label[obj], (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (0, 0, 0), thickness=2, lineType=2)
-                            cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.45,
-                                        (255, 0, 0), thickness=1, lineType=1)
+                            # cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,
+                            #             0.45,
+                            #             (255, 0, 0), thickness=1, lineType=1)
                         # log
                         if self.logger_status and self.frame_tags and confidence_ok:
                             label_no_spaces = self.input_label[obj].replace(" ",
@@ -241,10 +241,10 @@ class Tracker:
                             cv2.putText(self.image, l, (p1[0], p1[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.45,
                                         (0, 0, 0), thickness=2, lineType=2)
-                            cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20),
-                                        cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.45,
-                                        (255, 0, 0), thickness=1, lineType=1)
+                            # cv2.putText(self.image, 'FPS avg tracking: ' + str(int(self.avg_fps)), (10, 20),
+                            #             cv2.FONT_HERSHEY_SIMPLEX,
+                            #             0.45,
+                            #             (255, 0, 0), thickness=1, lineType=1)
                         # log
                         if self.logger_status and self.frame_tags and tracking_quality >= 7:
                             label_no_spaces = l.replace(" ", "")  # to allow the use of metrics calculation utility

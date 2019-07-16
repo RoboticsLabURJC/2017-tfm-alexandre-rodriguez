@@ -3,6 +3,8 @@
 #
 # @author: alexandre2r
 #
+# Graphical user interface module
+#
 # Based on @nuriaoyaga code:
 # https://github.com/RoboticsURJC-students/2016-tfg-nuria-oyaga/blob/
 #     master/gui/gui.py

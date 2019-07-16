@@ -1,3 +1,14 @@
+#
+# Created on Feb, 2018
+#
+# @author: alexandre2r
+#
+# Network module: encapsulation for Keras models
+#
+# Based on @naxvm code:
+# https://github.com/JdeRobot/dl-objectdetector
+#
+
 import os
 import time
 import yaml
