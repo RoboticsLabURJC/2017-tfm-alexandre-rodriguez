@@ -12,6 +12,7 @@ Modify the configuration file (.yml) accordingly.
  - Tensorflow and Keras support (Network->Framework).
  - The available sources are: 
 	- a locally saved video (ObjectTracker->Source->Video). Change the video path to your video (Video->Path)
+	- local saved images (ObjectTracker->Source->Images). Change the images path (Images->Path)
 	- live video from camera using OpenCV (ObjectTracker->Source->Local)
 	- ROS stream using usb_cam driver (ObjectTracker->Source->Stream)
 
