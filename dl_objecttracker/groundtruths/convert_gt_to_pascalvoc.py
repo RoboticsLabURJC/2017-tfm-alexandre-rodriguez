@@ -8,11 +8,11 @@ def get_files(dataset_name, path_file):
     if dataset_name == 'mot':  # ToDo: include ids in tracking (pending); now not taking id into account
         folder_path = path_file.rsplit('/', 1)[0]
         label_classes_dict = {'1': 'person',
-                              '2': 'person',
+                              '2': 'car',
                               '3': 'car',
                               '4': 'bicycle',
                               '5': 'motorbike',
-                              '6': 'car',
+                              '6': 'bicycle',
                               '7': 'person'
                               }  # coco equivalences for MOT label classes
         with open(path_file, 'r') as stream:
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     dataset = 'mot'
     if dataset == 'mot':
         file_path = path.relpath(
-            "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/MOT17DetLabels/train/MOT17-13/gt/gt.txt")
+            "/media/alexandre/Data/Documents/Alexandre2R/MOVA/TFM/video/MOT17Det/MOT17Det/train/MOT17-13/gt/gt.txt")
         #ToDo: move gt.txt from gt folder automatically, input file by args
     # elif dataset == 'otb':
     #     file_path = path.relpath(
